@@ -1,0 +1,161 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="bi bi-person me-2 text-primary"></i>
+                <%= locals.userId ? 'Editar Usuário' : 'Novo Usuário' %>
+            </h1>
+            <a href="/users" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><%= locals.userId ? 'Editar Usuário' : 'Novo Usuário' %></h5>
+            </div>
+            <div class="card-body">
+                <form action="<%= locals.userId ? `/users/${userId}/update` : '/users/create' %>" method="POST" class="needs-validation" novalidate>
+                    <% if (locals.userId) { %>
+                        <input type="hidden" name="_method" value="PUT">
+                    <% } %>
+                    
+                    <div class="mb-4">
+                        <label for="name" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="name" name="name" value="<%= locals.user && user.name || '' %>" required>
+                        <div class="invalid-feedback">
+                            Por favor, informe o nome do usuário.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="<%= locals.user && user.email || '' %>" required>
+                        <div class="invalid-feedback">
+                            Por favor, informe um email válido.
+                        </div>
+                    </div>
+                    
+                    <% if (!locals.userId) { %>
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Senha</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">
+                                Por favor, informe uma senha.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="confirmPassword" class="form-label">Confirmar Senha</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">
+                                As senhas não coincidem.
+                            </div>
+                        </div>
+                    <% } %>
+                    
+                    <div class="mb-4">
+                        <label for="group" class="form-label">Grupo</label>
+                        <select class="form-select" id="group" name="group">
+                            <option value="">Selecione um grupo</option>
+                            <% if (locals.groups && locals.groups.length > 0) { %>
+                                <% locals.groups.forEach(function(group) { %>
+                                    <option value="<%= group._id %>" <%= locals.user && user.group && user.group._id == group._id ? 'selected' : '' %>><%= group.name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="isAdmin" name="isAdmin" <%= locals.user && user.isAdmin ? 'checked' : '' %>>
+                            <label class="form-check-label" for="isAdmin">Administrador</label>
+                        </div>
+                        <div class="form-text">
+                            Se marcado, o usuário terá acesso a todas as funcionalidades do sistema.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="active" name="active" <%= !locals.user || locals.user && user.active ? 'checked' : '' %>>
+                            <label class="form-check-label" for="active">Ativo</label>
+                        </div>
+                        <div class="form-text">
+                            Se desmarcado, o usuário não poderá fazer login no sistema.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle password visibility
+        const togglePassword = document.getElementById('togglePassword');
+        const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        if (togglePassword && password) {
+            togglePassword.addEventListener('click', function() {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('bi-eye');
+                this.querySelector('i').classList.toggle('bi-eye-slash');
+            });
+        }
+        
+        if (toggleConfirmPassword && confirmPassword) {
+            toggleConfirmPassword.addEventListener('click', function() {
+                const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPassword.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('bi-eye');
+                this.querySelector('i').classList.toggle('bi-eye-slash');
+            });
+        }
+        
+        // Validate password match
+        const form = document.querySelector('form');
+        if (form && password && confirmPassword) {
+            form.addEventListener('submit', function(event) {
+                if (password.value !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity('As senhas não coincidem');
+                } else {
+                    confirmPassword.setCustomValidity('');
+                }
+            });
+            
+            confirmPassword.addEventListener('input', function() {
+                if (password.value !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity('As senhas não coincidem');
+                } else {
+                    confirmPassword.setCustomValidity('');
+                }
+            });
+        }
+    });
+</script> 

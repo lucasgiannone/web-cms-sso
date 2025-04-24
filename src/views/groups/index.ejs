@@ -1,0 +1,175 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0"><i class="bi bi-diagram-3 me-2 text-primary"></i>Grupos</h1>
+            <a href="/groups/new" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Novo Grupo
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="tableFilter" data-table-target="#groupTable" placeholder="Filtrar grupos...">
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <% if (locals.groups && groups.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="groupTable">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Descrição</th>
+                                    <th>Usuários</th>
+                                    <th>Mídias</th>
+                                    <th>Playlists</th>
+                                    <th>Players</th>
+                                    <th>Criado em</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% groups.forEach(function(group) { %>
+                                    <tr>
+                                        <td><%= group.name %></td>
+                                        <td><%= group.description || '-' %></td>
+                                        <td><span class="badge bg-primary"><%= group.userCount || 0 %></span></td>
+                                        <td><span class="badge bg-info"><%= group.mediaCount || 0 %></span></td>
+                                        <td><span class="badge bg-success"><%= group.playlistCount || 0 %></span></td>
+                                        <td><span class="badge bg-warning"><%= group.playerCount || 0 %></span></td>
+                                        <td><%= new Date(group.createdAt).toLocaleDateString() %></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="/groups/<%= group._id %>" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="/groups/<%= group._id %>/edit" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a href="/groups/<%= group._id %>/delete" class="btn btn-sm btn-outline-danger btn-delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <% if (locals.pagination) { %>
+                        <div class="d-flex justify-content-center mt-4">
+                            <nav aria-label="Navegação de páginas">
+                                <ul class="pagination">
+                                    <% if (pagination.currentPage > 1) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="/groups?page=<%= pagination.currentPage - 1 %>" aria-label="Anterior">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Anterior">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                                        <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                                            <a class="page-link" href="/groups?page=<%= i %>"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% if (pagination.currentPage < pagination.totalPages) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="/groups?page=<%= pagination.currentPage + 1 %>" aria-label="Próximo">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Próximo">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="bi bi-diagram-3 text-muted icon-large mb-3"></i>
+                        <h5>Nenhum grupo encontrado</h5>
+                        <p class="text-muted">Adicione grupos para organizar usuários, mídias e playlists.</p>
+                        <a href="/groups/new" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle me-2"></i>Criar Grupo
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Sobre Grupos</h5>
+            </div>
+            <div class="card-body">
+                <p>Os grupos são utilizados para organizar e controlar o acesso a recursos no sistema:</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="bi bi-people-fill text-primary me-3 icon-medium"></i>
+                                <div>
+                                    <h6 class="mb-1">Usuários</h6>
+                                    <p class="mb-0 text-muted">Usuários de um grupo têm acesso apenas às mídias e playlists do seu grupo.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="bi bi-images text-primary me-3 icon-medium"></i>
+                                <div>
+                                    <h6 class="mb-1">Mídias</h6>
+                                    <p class="mb-0 text-muted">Mídias são organizadas por grupo para facilitar o gerenciamento.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="bi bi-collection-play text-primary me-3 icon-medium"></i>
+                                <div>
+                                    <h6 class="mb-1">Playlists</h6>
+                                    <p class="mb-0 text-muted">Playlists são associadas a grupos para controle de acesso.</p>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex align-items-center">
+                                <i class="bi bi-display text-primary me-3 icon-medium"></i>
+                                <div>
+                                    <h6 class="mb-1">Players</h6>
+                                    <p class="mb-0 text-muted">Players podem ser associados a grupos para exibir conteúdo específico.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

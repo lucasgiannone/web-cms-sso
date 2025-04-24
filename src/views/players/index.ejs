@@ -1,0 +1,249 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Players</h1>
+    <div>
+      <% if (user.role === 'admin') { %>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newPlayerModal">
+          <i class="bi bi-key"></i> Gerar Nova Chave
+        </button>
+        <a href="/reset-player-indexes" class="btn btn-warning">
+          <i class="fas fa-sync"></i> Reinicializar Índices
+        </a>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Lista de Players</h6>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Status</th>
+              <th>Autorização</th>
+              <th>Chave</th>
+              <th>Playlist</th>
+              <th>Grupo</th>
+              <th>Última Conexão</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% players.forEach(player => { %>
+            <tr>
+              <td><%= player.name %></td>
+              <td>
+                <% if (player.status === "online") { %>
+                  <span class="badge bg-success pulse-animation" data-bs-toggle="tooltip" title="Online"><i class="bi bi-broadcast"></i> Online</span>
+                <% } else if (player.status === "error") { %>
+                  <span class="badge bg-danger" data-bs-toggle="tooltip" title="Erro"><i class="bi bi-exclamation-triangle"></i> Erro</span>
+                <% } else { %>
+                  <span class="badge bg-secondary" data-bs-toggle="tooltip" title="Offline"><i class="bi bi-broadcast-pin"></i> Offline</span>
+                <% } %>
+              </td>
+              <td>
+                <div>
+                  <% if (player.authorized) { %>
+                  <span class="badge bg-primary">Autorizado</span>
+                  <% } else { %>
+                  <span class="badge bg-warning">Não Autorizado</span>
+                  <% } %>
+                </div>
+              </td>
+              <td>
+                <% if (player.player_key) { %>
+                <div class="input-group">
+                  <input type="text" class="form-control form-control-sm" value="<%= player.player_key %>" readonly id="key-<%= player._id %>">
+                  <div class="input-group-append">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="copyToClipboard('key-<%= player._id %>')">
+                      <i class="bi bi-clipboard"></i>
+                    </button>
+                  </div>
+                </div>
+                <% } else { %>
+                <span class="text-muted">Não disponível</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (player.playlist) { %>
+                <%= player.playlist.name %>
+                <% } else { %>
+                <span class="text-muted">Nenhuma</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (player.group) { %>
+                <%= player.group.name %>
+                <% } else { %>
+                <span class="text-muted">Nenhum</span>
+                <% } %>
+              </td>
+              <td>
+                <%= new Date(player.last_connection).toLocaleString('pt-BR') %>
+              </td>
+              <td>
+                <div class="btn-group">
+                  <a href="/players/<%= player._id %>" class="btn btn-sm btn-info">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                  <a href="/players/<%= player._id %>/edit" class="btn btn-sm btn-primary">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal<%= player._id %>">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+
+                <!-- Modal de confirmação de exclusão -->
+                <div class="modal fade" id="deleteModal<%= player._id %>" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel<%= player._id %>" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel<%= player._id %>">Confirmar Exclusão</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                        Tem certeza que deseja excluir o player "<%= player.name %>"?
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <form action="/players/<%= player._id %>/delete" method="POST" class="d-inline">
+                          <button type="submit" class="btn btn-danger">Excluir</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Novo Player -->
+<div class="modal fade" id="newPlayerModal" tabindex="-1" aria-labelledby="newPlayerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newPlayerModalLabel">Novo Player</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form action="/players/generate-key" method="POST">
+        <div class="modal-body">
+          <div class="form-group mb-3">
+            <label for="name">Nome do Player</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+          </div>
+          
+          <div class="form-group mb-3">
+            <label for="description">Descrição</label>
+            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+          </div>
+          
+          <div class="form-group mb-3">
+            <label for="group">Grupo</label>
+            <select class="form-control" id="group" name="group" required>
+              <option value="">Selecione um grupo</option>
+              <% groups.forEach(function(group) { %>
+                <option value="<%= group._id %>"><%= group.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          
+          <div class="form-group mb-3">
+            <label for="playlist">Playlist</label>
+            <select class="form-control" id="playlist" name="playlist">
+              <option value="">Selecione uma playlist</option>
+              <% playlists.forEach(function(playlist) { %>
+                <option value="<%= playlist._id %>"><%= playlist.name %></option>
+              <% }); %>
+            </select>
+          </div>
+          
+          <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="authorized" name="authorized">
+            <label class="form-check-label" for="authorized">Autorizado</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Gerar Chave</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(25, 135, 84, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+    }
+  }
+  
+  .pulse-animation {
+    animation: pulse 2s infinite;
+    border-radius: 0.25rem;
+  }
+  
+  .badge.bg-success {
+    font-weight: normal;
+    padding: 0.35em 0.65em;
+  }
+  
+  .badge.bg-secondary {
+    font-weight: normal;
+    padding: 0.35em 0.65em;
+  }
+  
+  .badge.bg-danger {
+    font-weight: normal;
+    padding: 0.35em 0.65em;
+  }
+</style>
+
+<script>
+  function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    element.select();
+    document.execCommand('copy');
+    
+    // Mostrar feedback visual
+    const originalBg = element.style.backgroundColor;
+    element.style.backgroundColor = '#d4edda';
+    setTimeout(() => {
+      element.style.backgroundColor = originalBg;
+    }, 1000);
+  }
+
+  // Verificar se o modal deve ser mostrado (em caso de erro no formulário)
+  document.addEventListener('DOMContentLoaded', function() {
+    <% if (locals.showNewPlayerModal) { %>
+      new bootstrap.Modal(document.getElementById('newPlayerModal')).show();
+    <% } %>
+  });
+
+  // Inicializar tooltips do Bootstrap
+  document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+  });
+</script> 

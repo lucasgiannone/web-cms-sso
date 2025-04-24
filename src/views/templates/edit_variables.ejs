@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Variáveis - <%= template.name %> - CMS</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/templates.css">
+    
+    <style>
+        .variable-highlight {
+            outline: 2px solid var(--primary) !important;
+            background-color: rgba(37, 99, 235, 0.1) !important;
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-play-circle me-2"></i>
+                CMS Player
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard"><i class="fas fa-tachometer-alt me-1"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/media"><i class="fas fa-photo-video me-1"></i> Mídias</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/playlists"><i class="fas fa-list me-1"></i> Playlists</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/players"><i class="fas fa-tv me-1"></i> Players</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/templates"><i class="fas fa-code me-1"></i> Templates</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <% if (locals.user) { %>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> <%= locals.user.name %>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-1"></i> Perfil</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/auth/logout"><i class="fas fa-sign-out-alt me-1"></i> Sair</a></li>
+                        </ul>
+                    </li>
+                    <% } else { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/login"><i class="fas fa-sign-in-alt me-1"></i> Entrar</a>
+                    </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="template-container">
+        <div class="template-header d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="template-title mb-2">
+                    <i class="fas fa-sliders-h me-2 text-primary"></i>
+                    Editar Variáveis
+                </h1>
+                <nav aria-label="breadcrumb" class="template-breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+            <li class="breadcrumb-item"><a href="/templates">Templates</a></li>
+                        <li class="breadcrumb-item"><a href="/templates/<%= template._id %>"><%= template.name %></a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Editar Variáveis</li>
+          </ol>
+                </nav>
+        </div>
+            <div>
+                <a href="/templates/<%= template._id %>" class="template-btn template-btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Voltar
+                </a>
+              </div>
+            </div>
+
+                <div class="row">
+            <div class="col-lg-8 mb-4">
+                <!-- Visualização do template -->
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                        <h5 class="card-title mb-0 fw-bold">Prévia do Template</h5>
+                        <div class="template-viewer-tools">
+                            <button id="highlightVariablesBtn" class="template-btn template-btn-sm template-btn-outline-primary" title="Destacar variáveis">
+                                <i class="fas fa-highlighter me-1"></i> Destacar Variáveis
+                                </button>
+                              </div>
+                            </div>
+                    <div class="card-body p-0">
+                        <div class="template-preview-container" style="height: 500px;">
+                            <div class="ratio ratio-1x1 h-100">
+                                <iframe id="templatePreview" src="/templates/preview/<%= template._id %>" frameborder="0" class="border-0"></iframe>
+                            </div>
+                      </div>
+                    </div>
+                  </div>
+            </div>
+
+            <div class="col-lg-4 mb-4">
+                <!-- Editor de variáveis -->
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0 fw-bold">Variáveis</h5>
+                      </div>
+                      <div class="card-body">
+                        <form id="variablesForm" action="/templates/variables/<%= template._id %>" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="variables" id="variablesJson">
+                            
+                            <div id="variablesList">
+                                <% if (template.variables && template.variables.length > 0) { %>
+                                    <% template.variables.forEach((variable, index) => { %>
+                                        <div class="template-variable-item mb-4" data-variable-index="<%= index %>">
+                                            <div class="template-variable-header d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="mb-0 fw-bold template-variable-name"><%= variable.name %></h6>
+                                                <span class="template-badge template-badge-<%- variable.type === 'text' ? 'primary' : (variable.type === 'image' ? 'accent' : 'secondary') %>">
+                                                    <i class="fas <%- variable.type === 'text' ? 'fa-font' : (variable.type === 'image' ? 'fa-image' : 'fa-paint-brush') %> me-1"></i>
+                                                    <%= variable.type.charAt(0).toUpperCase() + variable.type.slice(1) %>
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold text-secondary small">Nome da Variável</label>
+                                                <input type="text" class="form-control variable-name" value="<%= variable.name %>" data-original-name="<%= variable.name %>">
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold text-secondary small">Tipo</label>
+                                                <select class="form-select variable-type">
+                                                    <option value="text" <%= variable.type === 'text' ? 'selected' : '' %>>Texto</option>
+                                                    <option value="image" <%= variable.type === 'image' ? 'selected' : '' %>>Imagem</option>
+                                                    <option value="color" <%= variable.type === 'color' ? 'selected' : '' %>>Cor</option>
+                                                </select>
+                          </div>
+                                            
+                                            <div class="mb-3 variable-default-container">
+                                                <% if (variable.type === 'text') { %>
+                                                    <label class="form-label fw-semibold text-secondary small">Valor Padrão</label>
+                                                    <input type="text" class="form-control variable-default" value="<%= variable.defaultValue || '' %>">
+                                                <% } else if (variable.type === 'image') { %>
+                                                    <label class="form-label fw-semibold text-secondary small">Imagem Padrão</label>
+                                                    <div class="template-image-upload mb-2">
+                                                        <input type="file" class="form-control d-none variable-default-file" accept="image/*">
+                                                        <input type="hidden" class="variable-default" value="<%= variable.defaultValue || '' %>">
+                                                        <div class="template-image-preview <%= variable.defaultValue ? '' : 'd-none' %>" style="background-image: url('<%= variable.defaultValue || '' %>')"></div>
+                                                        <button type="button" class="template-btn template-btn-outline-primary template-btn-sm variable-image-upload-btn">
+                                                            <i class="fas fa-upload me-1"></i> Enviar Imagem
+                                                        </button>
+                        </div>
+                                                    <% if (variable.defaultValue) { %>
+                                                        <div class="d-flex align-items-center variable-image-info">
+                                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                                            <small class="text-muted">Imagem já definida</small>
+                      </div>
+                                                    <% } %>
+                                                <% } else if (variable.type === 'color') { %>
+                                                    <label class="form-label fw-semibold text-secondary small">Cor Padrão</label>
+                                                    <div class="input-group">
+                                                        <input type="color" class="form-control form-control-color variable-default" value="<%= variable.defaultValue || '#ffffff' %>">
+                                                        <input type="text" class="form-control variable-default-text" value="<%= variable.defaultValue || '#ffffff' %>">
+                    </div>
+                                                <% } %>
+                  </div>
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold text-secondary small">Seletor CSS</label>
+                                                <input type="text" class="form-control variable-selector" value="<%= variable.selector || '' %>" placeholder="Seletor do elemento (opcional)">
+                                                <small class="text-muted">Usado para destacar o elemento na prévia.</small>
+                </div>
+                                            
+                                            <div class="d-flex justify-content-end">
+                                                <button type="button" class="template-btn template-btn-outline-danger template-btn-sm remove-variable-btn">
+                                                    <i class="fas fa-trash-alt me-1"></i> Remover
+                    </button>
+                  </div>
+                </div>
+                                    <% }) %>
+                <% } else { %>
+                                    <div class="text-center py-4">
+                                        <i class="fas fa-code text-muted mb-3" style="font-size: 2rem;"></i>
+                                        <h6 class="mb-2">Nenhuma variável encontrada</h6>
+                                        <p class="text-muted small">Adicione novas variáveis clicando no botão abaixo.</p>
+                </div>
+                <% } %>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="button" id="addVariableBtn" class="template-btn template-btn-outline-primary">
+                                    <i class="fas fa-plus me-1"></i> Adicionar Variável
+                                </button>
+                                <button type="submit" class="template-btn template-btn-primary">
+                                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                                </button>
+                            </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Template para nova variável -->
+    <template id="variableTemplate">
+        <div class="template-variable-item mb-4" data-variable-index="{index}">
+            <div class="template-variable-header d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 fw-bold template-variable-name">Nova Variável</h6>
+                <span class="template-badge template-badge-primary">
+                    <i class="fas fa-font me-1"></i>
+                    Texto
+                </span>
+  </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-secondary small">Nome da Variável</label>
+                <input type="text" class="form-control variable-name" value="NovaVariavel" data-original-name="">
+</div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-secondary small">Tipo</label>
+                <select class="form-select variable-type">
+                    <option value="text" selected>Texto</option>
+                    <option value="image">Imagem</option>
+                    <option value="color">Cor</option>
+                </select>
+            </div>
+            
+            <div class="mb-3 variable-default-container">
+                <label class="form-label fw-semibold text-secondary small">Valor Padrão</label>
+                <input type="text" class="form-control variable-default" value="">
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label fw-semibold text-secondary small">Seletor CSS</label>
+                <input type="text" class="form-control variable-selector" value="" placeholder="Seletor do elemento (opcional)">
+                <small class="text-muted">Usado para destacar o elemento na prévia.</small>
+            </div>
+            
+            <div class="d-flex justify-content-end">
+                <button type="button" class="template-btn template-btn-outline-danger template-btn-sm remove-variable-btn">
+                    <i class="fas fa-trash-alt me-1"></i> Remover
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Scripts específicos para gerenciamento de variáveis -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+            const variablesForm = document.getElementById('variablesForm');
+            const variablesList = document.getElementById('variablesList');
+            const variablesJson = document.getElementById('variablesJson');
+            const addVariableBtn = document.getElementById('addVariableBtn');
+            const variableTemplate = document.getElementById('variableTemplate');
+            const highlightVariablesBtn = document.getElementById('highlightVariablesBtn');
+            const previewFrame = document.getElementById('templatePreview');
+            
+            let variablesData = <%- JSON.stringify(template.variables || []) %>;
+            let variableCounter = variablesData.length;
+            
+            // Função para atualizar o JSON de variáveis
+            function updateVariablesJson() {
+                const variables = [];
+                
+                document.querySelectorAll('.template-variable-item').forEach(item => {
+                    const name = item.querySelector('.variable-name').value;
+                    const type = item.querySelector('.variable-type').value;
+                    const selector = item.querySelector('.variable-selector').value;
+                    let defaultValue = '';
+            
+            if (type === 'text') {
+                        defaultValue = item.querySelector('.variable-default').value;
+            } else if (type === 'image') {
+                        defaultValue = item.querySelector('.variable-default').value;
+                    } else if (type === 'color') {
+                        defaultValue = item.querySelector('.variable-default').value;
+                    }
+                    
+                    variables.push({
+                        name,
+                        type,
+                        selector,
+                        defaultValue
+                    });
+                });
+                
+                variablesJson.value = JSON.stringify(variables);
+                return variables;
+            }
+            
+            // Inicializar o JSON de variáveis
+            updateVariablesJson();
+            
+            // Adicionar nova variável
+            addVariableBtn.addEventListener('click', function() {
+                let template = variableTemplate.innerHTML
+                    .replace(/{index}/g, variableCounter++);
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = template;
+                
+                const newItem = tempDiv.firstElementChild;
+                
+                if (variablesList.querySelector('.text-center')) {
+                    variablesList.innerHTML = '';
+                }
+                
+                variablesList.appendChild(newItem);
+                updateVariablesJson();
+                
+                // Inicializar eventos para a nova variável
+                initVariableEvents(newItem);
+            });
+            
+            // Inicializar eventos para as variáveis existentes
+            document.querySelectorAll('.template-variable-item').forEach(item => {
+                initVariableEvents(item);
+            });
+            
+            // Função para inicializar eventos de variáveis
+            function initVariableEvents(item) {
+                const typeSelect = item.querySelector('.variable-type');
+                const defaultContainer = item.querySelector('.variable-default-container');
+                const removeBtn = item.querySelector('.remove-variable-btn');
+                const nameInput = item.querySelector('.variable-name');
+                
+                // Alterar o tipo da variável
+                typeSelect.addEventListener('change', function() {
+                    updateVariableType(item, this.value);
+                });
+                
+                // Atualizar o nome exibido
+                nameInput.addEventListener('input', function() {
+                    item.querySelector('.template-variable-name').textContent = this.value || 'Sem nome';
+                    updateVariablesJson();
+                });
+                
+                // Remover variável
+                removeBtn.addEventListener('click', function() {
+                    if (confirm('Tem certeza que deseja remover esta variável?')) {
+                        item.remove();
+                        
+                        if (document.querySelectorAll('.template-variable-item').length === 0) {
+                            variablesList.innerHTML = `
+                                <div class="text-center py-4">
+                                    <i class="fas fa-code text-muted mb-3" style="font-size: 2rem;"></i>
+                                    <h6 class="mb-2">Nenhuma variável encontrada</h6>
+                                    <p class="text-muted small">Adicione novas variáveis clicando no botão abaixo.</p>
+                                </div>
+                            `;
+                        }
+                        
+                        updateVariablesJson();
+                    }
+                });
+                
+                // Inicializar upload de imagem
+                const imageUploadBtn = item.querySelector('.variable-image-upload-btn');
+                if (imageUploadBtn) {
+                    imageUploadBtn.addEventListener('click', function() {
+                        const fileInput = item.querySelector('.variable-default-file');
+                        fileInput.click();
+                    });
+                    
+                    const fileInput = item.querySelector('.variable-default-file');
+                    fileInput.addEventListener('change', function() {
+                        if (this.files && this.files[0]) {
+                            const reader = new FileReader();
+                            const imagePreview = item.querySelector('.template-image-preview');
+                            
+                            reader.onload = function(e) {
+                                imagePreview.style.backgroundImage = `url('${e.target.result}')`;
+                                imagePreview.classList.remove('d-none');
+                                
+                                // Aqui nós apenas marcamos que há um arquivo para upload
+                                // O valor real será atualizado após o upload no servidor
+                                item.querySelector('.variable-default').value = 'uploading';
+                                
+                                // Atualizar informações da imagem
+                                const imageInfo = item.querySelector('.variable-image-info');
+                                if (imageInfo) {
+                                    imageInfo.innerHTML = `
+                                        <i class="fas fa-info-circle text-primary me-2"></i>
+                                        <small class="text-muted">Nova imagem selecionada (será salva ao submeter o formulário)</small>
+                                    `;
+                                } else {
+                                    const infoDiv = document.createElement('div');
+                                    infoDiv.className = 'd-flex align-items-center variable-image-info';
+                                    infoDiv.innerHTML = `
+                                        <i class="fas fa-info-circle text-primary me-2"></i>
+                                        <small class="text-muted">Nova imagem selecionada (será salva ao submeter o formulário)</small>
+                                    `;
+                                    item.querySelector('.template-image-upload').after(infoDiv);
+                                }
+                                
+                                updateVariablesJson();
+                            };
+                            
+                            reader.readAsDataURL(this.files[0]);
+            }
+          });
+        }
+                
+                // Sincronizar input de cor com texto
+                const colorInput = item.querySelector('.variable-default[type="color"]');
+                const colorTextInput = item.querySelector('.variable-default-text');
+                
+                if (colorInput && colorTextInput) {
+                    colorInput.addEventListener('input', function() {
+                        colorTextInput.value = this.value;
+                        updateVariablesJson();
+                    });
+                    
+                    colorTextInput.addEventListener('input', function() {
+                        // Garantir que o valor seja um código de cor válido
+                        if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+                            colorInput.value = this.value;
+                        }
+                        updateVariablesJson();
+                    });
+                    
+                    colorTextInput.addEventListener('blur', function() {
+                        // Corrigir o valor quando perder o foco
+                        if (!/^#[0-9A-F]{6}$/i.test(this.value)) {
+                            this.value = colorInput.value;
+                        }
+                        updateVariablesJson();
+                    });
+                }
+                
+                // Atualizar JSON quando valores mudam
+                item.querySelectorAll('input, select').forEach(input => {
+                    input.addEventListener('change', updateVariablesJson);
+                    input.addEventListener('blur', updateVariablesJson);
+                });
+            }
+            
+            // Função para atualizar o tipo da variável
+            function updateVariableType(item, type) {
+                const container = item.querySelector('.variable-default-container');
+                const badge = item.querySelector('.template-badge');
+                
+                // Atualizar badge
+                badge.className = `template-badge template-badge-${type === 'text' ? 'primary' : (type === 'image' ? 'accent' : 'secondary')}`;
+                badge.innerHTML = `<i class="fas ${type === 'text' ? 'fa-font' : (type === 'image' ? 'fa-image' : 'fa-paint-brush')} me-1"></i> ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                
+                // Atualizar campo de valor padrão
+                if (type === 'text') {
+                    container.innerHTML = `
+                        <label class="form-label fw-semibold text-secondary small">Valor Padrão</label>
+                        <input type="text" class="form-control variable-default" value="">
+                    `;
+                } else if (type === 'image') {
+                    container.innerHTML = `
+                        <label class="form-label fw-semibold text-secondary small">Imagem Padrão</label>
+                        <div class="template-image-upload mb-2">
+                            <input type="file" class="form-control d-none variable-default-file" accept="image/*">
+                            <input type="hidden" class="variable-default" value="">
+                            <div class="template-image-preview d-none"></div>
+                            <button type="button" class="template-btn template-btn-outline-primary template-btn-sm variable-image-upload-btn">
+                                <i class="fas fa-upload me-1"></i> Enviar Imagem
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Reinicializar eventos para upload de imagem
+                    const imageUploadBtn = container.querySelector('.variable-image-upload-btn');
+                    const fileInput = container.querySelector('.variable-default-file');
+                    
+                    imageUploadBtn.addEventListener('click', function() {
+                        fileInput.click();
+                    });
+                    
+                    fileInput.addEventListener('change', function() {
+                        if (this.files && this.files[0]) {
+                            const reader = new FileReader();
+                            const imagePreview = container.querySelector('.template-image-preview');
+                            
+                            reader.onload = function(e) {
+                                imagePreview.style.backgroundImage = `url('${e.target.result}')`;
+                                imagePreview.classList.remove('d-none');
+                                container.querySelector('.variable-default').value = 'uploading';
+                                
+                                // Atualizar informações da imagem
+                                const infoDiv = document.createElement('div');
+                                infoDiv.className = 'd-flex align-items-center variable-image-info';
+                                infoDiv.innerHTML = `
+                                    <i class="fas fa-info-circle text-primary me-2"></i>
+                                    <small class="text-muted">Nova imagem selecionada (será salva ao submeter o formulário)</small>
+                                `;
+                                container.appendChild(infoDiv);
+                                
+                                updateVariablesJson();
+                            };
+                            
+                            reader.readAsDataURL(this.files[0]);
+                        }
+                    });
+                    
+                } else if (type === 'color') {
+                    container.innerHTML = `
+                        <label class="form-label fw-semibold text-secondary small">Cor Padrão</label>
+                        <div class="input-group">
+                            <input type="color" class="form-control form-control-color variable-default" value="#ffffff">
+                            <input type="text" class="form-control variable-default-text" value="#ffffff">
+                        </div>
+                    `;
+                    
+                    // Sincronizar input de cor com texto
+                    const colorInput = container.querySelector('.variable-default[type="color"]');
+                    const colorTextInput = container.querySelector('.variable-default-text');
+                    
+                    colorInput.addEventListener('input', function() {
+                        colorTextInput.value = this.value;
+                        updateVariablesJson();
+                    });
+                    
+                    colorTextInput.addEventListener('input', function() {
+                        if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+                            colorInput.value = this.value;
+                        }
+                        updateVariablesJson();
+                    });
+                    
+                    colorTextInput.addEventListener('blur', function() {
+                        if (!/^#[0-9A-F]{6}$/i.test(this.value)) {
+                            this.value = colorInput.value;
+                        }
+                        updateVariablesJson();
+                    });
+                }
+                
+                updateVariablesJson();
+            }
+            
+            // Função para destacar variáveis no preview
+            highlightVariablesBtn.addEventListener('click', function() {
+                const iframe = previewFrame.contentWindow;
+                const variables = updateVariablesJson();
+                
+                iframe.postMessage({ 
+                    action: 'highlightVariables', 
+                    variables: variables 
+                }, '*');
+            });
+            
+            // Manipular mensagens do iframe
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.action === 'variableHighlighted') {
+                    console.log('Variável destacada:', event.data.variable);
+                }
+            });
+            
+            // Submeter formulário
+            variablesForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Verificar se existem nomes duplicados
+                const names = [];
+                let hasDuplicates = false;
+                
+                document.querySelectorAll('.variable-name').forEach(input => {
+                    const name = input.value.trim();
+                    if (names.includes(name)) {
+                        hasDuplicates = true;
+                        input.classList.add('is-invalid');
+        } else {
+                        names.push(name);
+                        input.classList.remove('is-invalid');
+                    }
+                });
+                
+                if (hasDuplicates) {
+                    alert('Existem nomes de variáveis duplicados. Por favor, corrija antes de salvar.');
+                    return;
+                }
+                
+                // Criar FormData para envio dos arquivos
+                const formData = new FormData();
+                formData.append('variablesJson', variablesJson.value);
+                
+                // Adicionar arquivos de imagem
+                document.querySelectorAll('.variable-default-file').forEach((fileInput, index) => {
+                    if (fileInput.files && fileInput.files[0]) {
+                        formData.append(`variable_image_${index}`, fileInput.files[0]);
+                        
+                        // Adicionar nome da variável para associar o arquivo
+                        const variableName = fileInput.closest('.template-variable-item').querySelector('.variable-name').value;
+                        formData.append(`variable_name_${index}`, variableName);
+                    }
+                });
+                
+                // Enviar o formulário com AJAX
+                fetch(variablesForm.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirecionar para a página de detalhes
+                        window.location.href = `/templates/${data.templateId}`;
+                    } else {
+                        alert('Erro ao salvar as variáveis: ' + (data.message || 'Erro desconhecido'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao salvar as variáveis. Verifique o console para mais detalhes.');
+                });
+    });
+  });
+</script>
+</body>
+</html> 

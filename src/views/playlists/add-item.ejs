@@ -1,0 +1,271 @@
+<%- contentFor('body') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Adicionar Item à Playlist</h1>
+    <a href="/playlists/<%= playlist._id %>" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i> Voltar para Playlist
+    </a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <ul class="nav nav-tabs card-header-tabs" id="itemTypeTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="media-tab" data-bs-toggle="tab" data-bs-target="#media-content" type="button" role="tab" aria-controls="media-content" aria-selected="true">
+                    <i class="bi bi-file-earmark-play me-1"></i> Mídia
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="playlist-tab" data-bs-toggle="tab" data-bs-target="#playlist-content" type="button" role="tab" aria-controls="playlist-content" aria-selected="false">
+                    <i class="bi bi-collection-play me-1"></i> Subplaylist
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="rss-tab" data-bs-toggle="tab" data-bs-target="#rss-content" type="button" role="tab" aria-controls="rss-content" aria-selected="false">
+                    <i class="bi bi-rss me-1"></i> RSS
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="itemTypeTabsContent">
+            <!-- Aba de Mídia -->
+            <div class="tab-pane fade show active" id="media-content" role="tabpanel" aria-labelledby="media-tab">
+                <form action="/playlists/<%= playlist._id %>/items" method="POST">
+                    <% if (playlist.items && playlist.items.length > 0) { %>
+                        <input type="hidden" name="existingItems" value="<%= JSON.stringify(playlist.items.map(item => item.toObject ? item.toObject() : item)) %>">
+                    <% } %>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="form-group mb-3">
+                                <label for="mediaId" class="form-label">Mídia <span class="text-danger">*</span></label>
+                                <select class="form-select" id="mediaId" name="mediaId" required>
+                                    <option value="">Selecione uma mídia</option>
+                                    <% medias.forEach(function(media) { %>
+                                        <option value="<%= media._id %>" data-type="<%= media.type %>" data-duration="<%= media.duration || 0 %>">
+                                            <%= media.name %> (<%= media.type %>)
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="duration" class="form-label">Duração (segundos)</label>
+                                        <input type="number" class="form-control" id="duration" name="duration" min="0" value="0">
+                                        <small class="form-text text-muted">Para imagens, define o tempo de exibição. Para vídeos, deixe 0 para usar a duração original.</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="order" class="form-label">Ordem</label>
+                                        <input type="number" class="form-control" id="order" name="order" min="0" value="<%= playlist.items ? playlist.items.length : 0 %>">
+                                        <small class="form-text text-muted">Posição do item na playlist. Itens são ordenados do menor para o maior.</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Seção de Agendamento -->
+                            <div class="card mt-3 mb-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Agendamento (Opcional)</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle-fill me-2"></i>
+                                        <strong>Dica:</strong> O agendamento permite configurar quando uma mídia deve aparecer na playlist.
+                                        <ul class="mb-0 mt-2">
+                                            <li>Campanhas sazonais (Natal, Black Friday, etc.)</li>
+                                            <li>Promoções por tempo limitado</li>
+                                            <li>Conteúdos específicos para certos dias da semana ou horários</li>
+                                            <li>Mensagens que devem aparecer apenas em datas especiais</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <p class="text-muted small mb-3">Configure quando esta mídia deve começar e parar de ser exibida na playlist. Deixe em branco para exibir sem restrições de tempo.</p>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="startDateTime" class="form-label">Data e Hora de Início</label>
+                                                <input type="datetime-local" class="form-control" id="startDateTime" name="startDateTime">
+                                                <small class="form-text text-muted">A partir de quando esta mídia deve ser exibida.</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="endDateTime" class="form-label">Data e Hora de Fim</label>
+                                                <input type="datetime-local" class="form-control" id="endDateTime" name="endDateTime">
+                                                <small class="form-text text-muted">Até quando esta mídia deve ser exibida.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">Pré-visualização</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div id="media-preview" class="mb-3">
+                                        <div class="placeholder-image d-flex justify-content-center align-items-center bg-light" style="height: 200px; border-radius: 5px;">
+                                            <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                        </div>
+                                    </div>
+                                    <h6 id="media-name" class="mb-1">Selecione uma mídia</h6>
+                                    <p id="media-info" class="text-muted small">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="/playlists/<%= playlist._id %>" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-2"></i>Adicionar Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Aba de Subplaylist -->
+            <div class="tab-pane fade" id="playlist-content" role="tabpanel" aria-labelledby="playlist-tab">
+                <form action="/playlists/<%= playlist._id %>/add-subplaylist" method="POST">
+                    <!-- ... código existente para a aba de subplaylist ... -->
+                </form>
+            </div>
+            
+            <!-- Nova Aba de RSS -->
+            <div class="tab-pane fade" id="rss-content" role="tabpanel" aria-labelledby="rss-tab">
+                <form action="/playlists/<%= playlist._id %>/add-rss" method="POST">
+                    <div class="mb-3">
+                        <label for="rssId" class="form-label">Fonte RSS</label>
+                        <select class="form-select" id="rssId" name="rssId" required>
+                            <option value="">Selecione uma fonte RSS</option>
+                            <% rssSources.forEach(rss => { %>
+                                <option value="<%= rss._id %>"><%= rss.name %> (<%= rss.source %>)</option>
+                            <% }); %>
+                        </select>
+                        <div class="form-text">Selecione a fonte RSS que deseja adicionar.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="duration" class="form-label">Duração (segundos)</label>
+                        <input type="number" class="form-control" id="duration" name="duration" min="10" value="60">
+                        <div class="form-text">Tempo que o conteúdo RSS será exibido.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="startDateTime" class="form-label">Data e hora de início (opcional)</label>
+                        <input type="datetime-local" class="form-control" id="startDateTime" name="startDateTime">
+                        <div class="form-text">Se definido, o item só será exibido a partir desta data e hora.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="endDateTime" class="form-label">Data e hora de término (opcional)</label>
+                        <input type="datetime-local" class="form-control" id="endDateTime" name="endDateTime">
+                        <div class="form-text">Se definido, o item só será exibido até esta data e hora.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/playlists/<%= playlist._id %>" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Adicionar Fonte RSS</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const mediaSelect = document.getElementById('mediaId');
+    const durationInput = document.getElementById('duration');
+    const mediaPreview = document.getElementById('media-preview');
+    const mediaName = document.getElementById('media-name');
+    const mediaInfo = document.getElementById('media-info');
+    const startDateTimeInput = document.getElementById('startDateTime');
+    const endDateTimeInput = document.getElementById('endDateTime');
+    
+    console.log("Formulário de adicionar item inicializado");
+    
+    // Adicionar listener ao formulário para log no envio
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+      console.log("Formulário de adicionar item enviado com valores:", {
+        mediaId: mediaSelect.value,
+        duration: durationInput.value,
+        startDateTime: startDateTimeInput ? startDateTimeInput.value : null,
+        endDateTime: endDateTimeInput ? endDateTimeInput.value : null
+      });
+    });
+    
+    // Atualizar a pré-visualização quando a mídia for selecionada
+    mediaSelect.addEventListener('change', function() {
+      const selectedOption = this.options[this.selectedIndex];
+      const mediaId = this.value;
+      
+      if (!mediaId) {
+        // Nenhuma mídia selecionada
+        mediaPreview.innerHTML = `
+          <div class="placeholder-image d-flex justify-content-center align-items-center bg-light" style="height: 200px; border-radius: 5px;">
+            <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+          </div>
+        `;
+        mediaName.textContent = 'Selecione uma mídia';
+        mediaInfo.textContent = '-';
+        durationInput.value = '0';
+        return;
+      }
+      
+      const mediaType = selectedOption.dataset.type;
+      const mediaDuration = parseFloat(selectedOption.dataset.duration) || 0;
+      
+      // Atualizar o nome e informações
+      mediaName.textContent = selectedOption.textContent;
+      mediaInfo.textContent = `Tipo: ${mediaType}${mediaDuration > 0 ? `, Duração: ${mediaDuration.toFixed(1)}s` : ''}`;
+      
+      // Atualizar a pré-visualização
+      if (mediaType === 'image') {
+        mediaPreview.innerHTML = `
+          <img src="/api/media/${mediaId}/file" class="img-fluid" style="max-height: 200px; border-radius: 5px;" alt="Preview">
+        `;
+        
+        // Definir duração padrão para imagens (10 segundos)
+        durationInput.value = '10';
+      } else if (mediaType === 'video') {
+        mediaPreview.innerHTML = `
+          <div class="position-relative" style="height: 200px;">
+            <video src="/api/media/${mediaId}/file" class="img-fluid w-100 h-100" style="object-fit: contain; border-radius: 5px;" 
+              controls preload="metadata">
+              Seu navegador não suporta a reprodução de vídeos.
+            </video>
+          </div>
+        `;
+        
+        // Usar a duração extraída do vídeo
+        durationInput.value = mediaDuration > 0 ? mediaDuration.toFixed(1) : '0';
+      }
+    });
+    
+    // Monitore mudanças nos campos de data/hora se existirem
+    if (startDateTimeInput) {
+      startDateTimeInput.addEventListener('change', function() {
+        console.log("Data/hora de início alterada:", this.value);
+      });
+    }
+    
+    if (endDateTimeInput) {
+      endDateTimeInput.addEventListener('change', function() {
+        console.log("Data/hora de fim alterada:", this.value);
+      });
+    }
+  });
+</script> 

@@ -1,0 +1,69 @@
+<%- contentFor('body') %>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4 mb-4">Integração SAML com Empresa Parceira</h1>
+    
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-building me-1"></i>
+                    Passos para Integração com Empresa Parceira
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-primary">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Informação:</strong> Siga estas etapas para configurar a integração SAML SSO com uma empresa parceira.
+                    </div>
+                    
+                    <h5 class="mt-4">1. Disponibilize as informações de configuração SAML</h5>
+                    <p>
+                        Para a empresa parceira configurar o SAML SSO, eles precisarão das seguintes informações:
+                    </p>
+                    <ul>
+                        <li><strong>Entity ID:</strong> <code><%= samlConfig.issuer %></code></li>
+                        <li><strong>Reply URL:</strong> <code><%= samlConfig.callbackUrl %></code></li>
+                        <li><strong>Metadata URL:</strong> <code><%= appUrl %>/auth/saml/metadata</code></li>
+                    </ul>
+                    
+                    <p>Você pode enviar estas informações de três maneiras:</p>
+                    <ol>
+                        <li>Compartilhando os dados manualmente via email</li>
+                        <li>Enviando o arquivo de configuração para download através do botão na <a href="/admin/saml-info">página de configuração SAML</a></li>
+                        <li>Dando acesso temporário para a empresa visualizar a página de configuração SAML</li>
+                    </ol>
+                    
+                    <h5 class="mt-4">2. Receba as informações do provedor de identidade</h5>
+                    <p>
+                        Após a empresa configurar o aplicativo SAML no lado deles, solicite as seguintes informações:
+                    </p>
+                    <ul>
+                        <li><strong>Entry Point URL (URL do provedor de identidade):</strong> URL para onde seu sistema redirecionará os usuários para autenticação</li>
+                        <li><strong>Certificado X.509:</strong> Certificado público do provedor de identidade (formato PEM ou Base64)</li>
+                        <li><strong>Formato de ID (opcional):</strong> Formato do identificador de usuário que será enviado</li>
+                    </ul>
+                    
+                    <h5 class="mt-4">3. Configure o sistema com as informações recebidas</h5>
+                    <p>
+                        Configure as variáveis de ambiente no arquivo <code>.env</code> do sistema:
+                    </p>
+                    <pre class="bg-light p-3 rounded">
+SAML_ENTRY_POINT=https://idp.empresa-parceira.com/saml/sso
+SAML_CERT=MIIDpDCCAoygAwIBAgIJAOUHvh4... (certificado base64)
+                    </pre>
+                    
+                    <h5 class="mt-4">4. Teste a integração</h5>
+                    <p>
+                        Após configurar ambos os lados, solicite à empresa que teste o login através do botão "Login Único (SSO)" na página de login.
+                        É recomendável que um usuário específico da empresa realize os testes iniciais.
+                    </p>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Lembre-se:</strong> A autenticação SAML só funcionará após a conclusão de todas as etapas acima, com o certificado e Entry Point URL corretamente configurados.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

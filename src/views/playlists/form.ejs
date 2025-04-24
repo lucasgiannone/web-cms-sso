@@ -1,0 +1,274 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="bi bi-collection-play me-2 text-primary"></i>
+                <%= locals.playlistId ? 'Editar Playlist' : 'Nova Playlist' %>
+            </h1>
+            <a href="/playlists" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><%= locals.playlistId ? 'Editar Playlist' : 'Nova Playlist' %></h5>
+            </div>
+            <div class="card-body">
+                <form action="<%= locals.playlistId ? `/playlists/${playlistId}/update` : '/playlists/create' %>" method="POST" class="needs-validation" enctype="multipart/form-data" novalidate>
+                    <% if (locals.playlistId) { %>
+                        <input type="hidden" name="_method" value="PUT">
+                    <% } %>
+                    
+                    <div class="mb-4">
+                        <label for="name" class="form-label">Nome da Playlist</label>
+                        <input type="text" class="form-control" id="name" name="name" value="<%= locals.playlist && playlist.name || '' %>" required>
+                        <div class="invalid-feedback">
+                            Por favor, informe um nome para a playlist.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"><%= locals.playlist && playlist.description || '' %></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="thumbnail" class="form-label">Thumbnail da Playlist</label>
+                        <div class="row align-items-center">
+                            <div class="col-md-4 mb-3 mb-md-0">
+                                <div class="thumbnail-preview-container border rounded p-2 text-center">
+                                    <% if (locals.playlist && playlist.thumbnail) { %>
+                                        <img src="/api/media/<%= playlist.thumbnail._id %>/file" class="img-fluid thumbnail-preview" 
+                                             alt="Thumbnail atual" style="max-height: 150px; object-fit: contain;" id="current-thumbnail">
+                                        <div class="d-flex justify-content-center align-items-center bg-light d-none" style="height: 150px;" id="thumbnail-preview-placeholder">
+                                            <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                        </div>
+                                        <img id="thumbnail-preview" src="" class="img-fluid thumbnail-preview d-none" 
+                                             alt="Preview" style="max-height: 150px; object-fit: contain;">
+                                    <% } else { %>
+                                        <div class="d-flex justify-content-center align-items-center bg-light" style="height: 150px;" id="thumbnail-preview-placeholder">
+                                            <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                                        </div>
+                                        <img id="thumbnail-preview" src="" class="img-fluid thumbnail-preview d-none" 
+                                             alt="Preview" style="max-height: 150px; object-fit: contain;">
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="thumbnail-upload" class="form-label">Fazer upload de imagem</label>
+                                    <input type="file" class="form-control" id="thumbnail-upload" name="thumbnail" 
+                                           accept="image/*" <% if (locals.playlist && playlist.thumbnail) { %>data-has-thumbnail="true"<% } %>>
+                                    <input type="hidden" name="keep_existing_thumbnail" id="keep-existing-thumbnail" 
+                                           value="<%= locals.playlist && playlist.thumbnail ? 'true' : 'false' %>">
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="remove-thumbnail" name="remove_thumbnail" value="true">
+                                    <label class="form-check-label" for="remove-thumbnail">
+                                        Remover thumbnail atual
+                                    </label>
+                                </div>
+                                <div class="alert alert-info small">
+                                    <i class="bi bi-info-circle-fill me-1"></i>
+                                    Tamanho recomendado: 500x500 pixels. Formatos aceitos: JPG, PNG, GIF.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="group" class="form-label">Grupo</label>
+                        <select class="form-select" id="group" name="group">
+                            <option value="">Selecione um grupo</option>
+                            <% if (locals.groups && locals.groups.length > 0) { %>
+                                <% locals.groups.forEach(function(group) { %>
+                                    <option value="<%= group._id %>" <%= locals.playlist && playlist.group && playlist.group._id == group._id ? 'selected' : '' %>><%= group.name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                    
+                    <% if (locals.playlistId) { %>
+                        <div class="mb-4">
+                            <label class="form-label">Itens da Playlist</label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <% if (locals.playlist && playlist.items && playlist.items.length > 0) { %>
+                                        <div class="list-group" id="playlistItems">
+                                            <% playlist.items.forEach(function(item, index) { %>
+                                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-1"><%= item.media.name %></h6>
+                                                        <small class="text-muted"><%= item.media.type %></small>
+                                                    </div>
+                                                    <div>
+                                                        <input type="hidden" name="items[<%= index %>][media]" value="<%= item.media._id %>">
+                                                        <input type="hidden" name="items[<%= index %>][duration]" value="<%= item.duration %>">
+                                                        <div class="input-group input-group-sm" style="width: 150px;">
+                                                            <span class="input-group-text">Duração</span>
+                                                            <input type="number" class="form-control" value="<%= item.duration %>" min="1" max="3600" 
+                                                                   onchange="document.getElementsByName('items[<%= index %>][duration]')[0].value = this.value">
+                                                            <span class="input-group-text">seg</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <% }); %>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="text-center py-4">
+                                            <i class="bi bi-collection-play text-muted icon-large mb-3"></i>
+                                            <p class="mb-0">Nenhum item na playlist</p>
+                                            <p class="text-muted">Adicione itens após salvar a playlist.</p>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Você poderá adicionar itens à playlist após salvá-la.
+                        </div>
+                    <% } %>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos
+        const thumbnailUpload = document.getElementById('thumbnail-upload');
+        const thumbnailPreview = document.getElementById('thumbnail-preview');
+        const thumbnailPlaceholder = document.getElementById('thumbnail-preview-placeholder');
+        const keepExistingThumbnail = document.getElementById('keep-existing-thumbnail');
+        const removeThumbnail = document.getElementById('remove-thumbnail');
+        const currentThumbnail = document.getElementById('current-thumbnail');
+        
+        // Verificar se existe thumbnail atual
+        const hasExistingThumbnail = thumbnailUpload && thumbnailUpload.getAttribute('data-has-thumbnail') === 'true';
+        
+        // Se não houver thumbnail existente, esconder a opção de remover
+        if (!hasExistingThumbnail && removeThumbnail) {
+            removeThumbnail.closest('.form-check').style.display = 'none';
+        }
+        
+        // Função para exibir preview da imagem selecionada
+        if (thumbnailUpload) {
+            thumbnailUpload.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    
+                    // Verificar se é uma imagem
+                    if (!file.type.match('image.*')) {
+                        alert('Por favor, selecione apenas arquivos de imagem.');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // Verificar tamanho (limite de 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('O arquivo é muito grande. Por favor, selecione uma imagem de até 5MB.');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    // Criar preview da imagem
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (thumbnailPreview && thumbnailPlaceholder) {
+                            thumbnailPreview.src = e.target.result;
+                            thumbnailPreview.classList.remove('d-none');
+                            thumbnailPlaceholder.classList.remove('d-none');
+                            
+                            // Ocultar a thumbnail atual se estiver em edição
+                            if (currentThumbnail) {
+                                currentThumbnail.classList.add('d-none');
+                            }
+                            
+                            // Se foi selecionada uma nova imagem, estamos implicitamente substituindo a existente
+                            if (keepExistingThumbnail) {
+                                keepExistingThumbnail.value = 'false';
+                            }
+                            
+                            // Desmarcar a opção de remover, já que estamos substituindo
+                            if (removeThumbnail) {
+                                removeThumbnail.checked = false;
+                            }
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // Se nenhum arquivo foi selecionado, mostrar placeholder
+                    if (thumbnailPreview) {
+                        thumbnailPreview.classList.add('d-none');
+                    }
+                    
+                    // Mostrar imagem atual se estiver em edição, senão mostrar placeholder
+                    if (currentThumbnail) {
+                        currentThumbnail.classList.remove('d-none');
+                        if (thumbnailPlaceholder) {
+                            thumbnailPlaceholder.classList.add('d-none');
+                        }
+                    } else if (thumbnailPlaceholder) {
+                        thumbnailPlaceholder.classList.remove('d-none');
+                    }
+                }
+            });
+        }
+        
+        // Lógica para o checkbox de remover thumbnail
+        if (removeThumbnail) {
+            removeThumbnail.addEventListener('change', function() {
+                if (this.checked) {
+                    // Se escolheu remover, limpar o campo de upload
+                    if (thumbnailUpload) {
+                        thumbnailUpload.value = '';
+                    }
+                    
+                    // E indicar que não queremos manter a thumbnail existente
+                    if (keepExistingThumbnail) {
+                        keepExistingThumbnail.value = 'false';
+                    }
+                    
+                    // Ocultar a thumbnail atual e a preview
+                    if (currentThumbnail) {
+                        currentThumbnail.classList.add('d-none');
+                    }
+                    if (thumbnailPreview) {
+                        thumbnailPreview.classList.add('d-none');
+                    }
+                    
+                    // Mostrar placeholder
+                    if (thumbnailPlaceholder) {
+                        thumbnailPlaceholder.classList.remove('d-none');
+                    }
+                } else {
+                    // Se desmarcou a opção de remover, mostrar a thumbnail atual (se existir)
+                    if (currentThumbnail && hasExistingThumbnail) {
+                        currentThumbnail.classList.remove('d-none');
+                        if (thumbnailPlaceholder) {
+                            thumbnailPlaceholder.classList.add('d-none');
+                        }
+                        if (keepExistingThumbnail) {
+                            keepExistingThumbnail.value = 'true';
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script> 

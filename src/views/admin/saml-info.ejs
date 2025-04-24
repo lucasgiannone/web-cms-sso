@@ -1,0 +1,105 @@
+<%- contentFor('body') %>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4 mb-4">Configuração SAML (SSO)</h1>
+    
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-shield-lock me-1"></i>
+                        Informações para Integração SAML
+                    </div>
+                    <div>
+                        <a href="/admin/saml-info/download" class="btn btn-sm btn-primary">
+                            <i class="bi bi-download me-1"></i> Baixar Configuração
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4">
+                        Utilize as informações abaixo para configurar o login único (SSO) com nossa plataforma.
+                        Estas informações devem ser configuradas no provedor de identidade (IdP) da empresa parceira.
+                    </p>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        O Single Sign-On (SSO) permite que os usuários da empresa parceira acessem nossa plataforma sem precisar de novas credenciais, usando o sistema de login corporativo existente.
+                    </div>
+                    
+                    <div class="table-responsive mt-4">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th style="width: 30%">Identificador da Entidade (Entity ID)</th>
+                                    <td>
+                                        <code><%= samlConfig.issuer %></code>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2 copy-btn" data-clipboard-text="<%= samlConfig.issuer %>">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>URL de Resposta (Reply URL / ACS URL)</th>
+                                    <td>
+                                        <code><%= samlConfig.callbackUrl %></code>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2 copy-btn" data-clipboard-text="<%= samlConfig.callbackUrl %>">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>URL de Metadados SAML</th>
+                                    <td>
+                                        <code><%= appUrl %>/auth/saml/metadata</code>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2 copy-btn" data-clipboard-text="<%= appUrl %>/auth/saml/metadata">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                        <a href="/auth/saml/metadata" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                            <i class="bi bi-box-arrow-up-right"></i> Abrir
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h5 class="mt-4">Processo de Integração</h5>
+                    <ol class="mt-3">
+                        <li>Configure o aplicativo SAML no provedor de identidade usando os valores acima.</li>
+                        <li>Forneça o URL de Login (Entry Point) e o certificado X.509 do provedor de identidade para nossa equipe.</li>
+                        <li>Após configurarmos o sistema, teste o login através do botão "Login Único (SSO)" na página de login.</li>
+                    </ol>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Importante:</strong> O login via SSO só funcionará depois que recebermos e configurarmos as informações do provedor de identidade da empresa parceira.
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="/admin/saml-company-integration" class="btn btn-primary">
+                            <i class="bi bi-building-gear me-2"></i> Ver Guia de Integração com Empresas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar clipboard.js para os botões de cópia
+    const clipboard = new ClipboardJS('.copy-btn');
+    
+    clipboard.on('success', function(e) {
+        const originalHTML = e.trigger.innerHTML;
+        e.trigger.innerHTML = '<i class="bi bi-check"></i>';
+        setTimeout(function() {
+            e.trigger.innerHTML = originalHTML;
+        }, 1500);
+        e.clearSelection();
+    });
+});
+</script> 

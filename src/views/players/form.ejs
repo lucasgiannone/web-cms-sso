@@ -1,0 +1,170 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="bi bi-display me-2 text-primary"></i>
+                <%= locals.playerId ? 'Editar Player' : 'Novo Player' %>
+            </h1>
+            <a href="/players" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><%= locals.playerId ? 'Editar Player' : 'Novo Player' %></h5>
+            </div>
+            <div class="card-body">
+                <form action="<%= locals.playerId ? `/players/${playerId}/update` : '/players/create' %>" method="POST" class="needs-validation" novalidate>
+                    <% if (locals.playerId) { %>
+                        <input type="hidden" name="_method" value="PUT">
+                    <% } %>
+                    
+                    <div class="mb-4">
+                        <label for="name" class="form-label">Nome do Player</label>
+                        <input type="text" class="form-control" id="name" name="name" value="<%= locals.player && player.name || '' %>" required>
+                        <div class="invalid-feedback">
+                            Por favor, informe um nome para o player.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"><%= locals.player && player.description || '' %></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="hardware_id" class="form-label">ID Único</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="hardware_id" name="hardware_id" value="<%= locals.player && player.hardware_id || '' %>" <%= locals.playerId ? 'readonly' : '' %> required>
+                            <% if (!locals.playerId) { %>
+                                <button class="btn btn-outline-secondary" type="button" id="generateId">
+                                    <i class="bi bi-shuffle"></i> Gerar
+                                </button>
+                            <% } %>
+                        </div>
+                        <div class="form-text">
+                            ID único para identificar o player no sistema.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="group" class="form-label">Grupo</label>
+                        <select class="form-select" id="group" name="group">
+                            <option value="">Selecione um grupo</option>
+                            <% if (locals.groups && locals.groups.length > 0) { %>
+                                <% locals.groups.forEach(function(group) { %>
+                                    <option value="<%= group._id %>" <%= locals.player && player.group && player.group._id == group._id ? 'selected' : '' %>><%= group.name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="playlist" class="form-label">Playlist</label>
+                        <select class="form-select" id="playlist" name="playlist">
+                            <option value="">Selecione uma playlist</option>
+                            <% if (locals.playlists && locals.playlists.length > 0) { %>
+                                <% locals.playlists.forEach(function(playlist) { %>
+                                    <option value="<%= playlist._id %>" <%= locals.player && player.playlist && player.playlist._id == playlist._id ? 'selected' : '' %>><%= playlist.name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="authorized" name="authorized" <%= locals.player && player.authorized ? 'checked' : '' %>>
+                            <label class="form-check-label" for="authorized">Autorizado</label>
+                        </div>
+                        <div class="form-text">
+                            Se marcado, o player poderá acessar o conteúdo.
+                        </div>
+                    </div>
+                    
+                    <!-- Configurações de Janela -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Configurações de Janela</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="borderless" name="windowConfig[borderless]"
+                                    <%= locals.player && player.windowConfig && player.windowConfig.borderless ? 'checked' : '' %>>
+                                <label class="form-check-label" for="borderless">Modo sem bordas</label>
+                                <div class="form-text">
+                                    Se marcado, o player será exibido em modo janela sem bordas.
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="width" class="form-label">Largura (pixels)</label>
+                                    <input type="number" class="form-control" id="width" name="windowConfig[width]" 
+                                        value="<%= locals.player && player.windowConfig && player.windowConfig.width || 1280 %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="height" class="form-label">Altura (pixels)</label>
+                                    <input type="number" class="form-control" id="height" name="windowConfig[height]"
+                                        value="<%= locals.player && player.windowConfig && player.windowConfig.height || 720 %>">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="position" class="form-label">Posição na Tela</label>
+                                <select class="form-select" id="position" name="windowConfig[position]">
+                                    <option value="top-left" <%= locals.player && player.windowConfig && player.windowConfig.position === 'top-left' ? 'selected' : '' %>>
+                                        Superior Esquerda
+                                    </option>
+                                    <option value="top-right" <%= locals.player && player.windowConfig && player.windowConfig.position === 'top-right' ? 'selected' : '' %>>
+                                        Superior Direita
+                                    </option>
+                                    <option value="bottom-left" <%= locals.player && player.windowConfig && player.windowConfig.position === 'bottom-left' ? 'selected' : '' %>>
+                                        Inferior Esquerda
+                                    </option>
+                                    <option value="bottom-right" <%= locals.player && player.windowConfig && player.windowConfig.position === 'bottom-right' ? 'selected' : '' %>>
+                                        Inferior Direita
+                                    </option>
+                                </select>
+                                <div class="form-text">
+                                    Define onde a janela será posicionada na tela.
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Estas configurações serão aplicadas quando o player for reiniciado.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gerador de ID único
+        const generateIdButton = document.getElementById('generateId');
+        if (generateIdButton) {
+            generateIdButton.addEventListener('click', function() {
+                const uniqueId = document.getElementById('hardware_id');
+                const randomId = Math.random().toString(36).substring(2, 15) + 
+                                Math.random().toString(36).substring(2, 15);
+                uniqueId.value = randomId;
+            });
+        }
+    });
+</script> 

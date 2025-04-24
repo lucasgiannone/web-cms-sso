@@ -1,0 +1,58 @@
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        Simulador de Login SAML
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Esta é uma página de simulação de IdP SAML para testes de desenvolvimento.
+                        Em um ambiente real, essa tela seria fornecida pelo provedor de identidade do parceiro.
+                    </div>
+
+                    <p>Autenticando para: <strong><%= serviceProvider %></strong></p>
+
+                    <form action="/simulated-idp/auth" method="post" class="mt-4">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="usuario.teste@empresa.com.br" required>
+                            <div class="form-text">Email que será enviado na resposta SAML</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   value="Usuário de Teste" required>
+                            <div class="form-text">Nome que será enviado na resposta SAML</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="cargo" class="form-label">Cargo</label>
+                            <input type="text" class="form-control" id="cargo" name="cargo" value="Analista">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="departamento" class="form-label">Departamento</label>
+                            <input type="text" class="form-control" id="departamento" name="departamento" value="TI">
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Autenticar com SAML
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Este simulador é apenas para fins de desenvolvimento e testes.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

@@ -1,0 +1,394 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Detalhes do Player</h1>
+    <div>
+      <a href="/players" class="btn btn-secondary me-2">
+        <i class="bi bi-arrow-left"></i> Voltar
+      </a>
+      <a href="/players/<%= player._id %>/edit" class="btn btn-primary">
+        <i class="bi bi-pencil"></i> Editar
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+          <h6 class="m-0 font-weight-bold text-primary">Informações do Player</h6>
+          <div>
+            <% if (player.status === "online") { %>
+              <span class="badge bg-success pulse-animation">
+                <i class="bi bi-broadcast"></i> Online
+              </span>
+            <% } else if (player.status === "error") { %>
+              <span class="badge bg-danger">
+                <i class="bi bi-exclamation-triangle"></i> Erro
+              </span>
+            <% } else { %>
+              <span class="badge bg-secondary">
+                <i class="bi bi-broadcast-pin"></i> Offline
+              </span>
+            <% } %>
+            <span class="badge <%= player.authorized ? 'bg-primary' : 'bg-warning' %> ms-2">
+              <%= player.authorized ? 'Autorizado' : 'Não Autorizado' %>
+            </span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="status-card <%= player.status === 'online' ? 'border-success' : (player.status === 'error' ? 'border-danger' : 'border-secondary') %> mb-3">
+                <div class="status-header <%= player.status === 'online' ? 'bg-success' : (player.status === 'error' ? 'bg-danger' : 'bg-secondary') %> text-white p-2">
+                  <h6 class="mb-0">
+                    <% if (player.status === "online") { %>
+                      <i class="bi bi-broadcast"></i> Status: Online
+                    <% } else if (player.status === "error") { %>
+                      <i class="bi bi-exclamation-triangle"></i> Status: Erro
+                    <% } else { %>
+                      <i class="bi bi-broadcast-pin"></i> Status: Offline
+                    <% } %>
+                  </h6>
+                </div>
+                <div class="status-body p-3">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p><strong>Última conexão:</strong><br>
+                      <%= new Date(player.last_connection).toLocaleString('pt-BR') %></p>
+                    </div>
+                    <div class="col-md-6">
+                      <p><strong>Tempo desde última conexão:</strong><br>
+                      <% 
+                        const lastConnection = new Date(player.last_connection);
+                        const now = new Date();
+                        const diffMs = now - lastConnection;
+                        const diffMins = Math.round(diffMs / 60000);
+                        
+                        if (diffMins < 1) {
+                          %><span class="text-success">Menos de um minuto</span><%
+                        } else if (diffMins < 60) {
+                          %><span class="<%= player.status === 'online' ? 'text-success' : 'text-danger' %>"><%= diffMins %> minuto(s)</span><%
+                        } else {
+                          const diffHours = Math.floor(diffMins / 60);
+                          if (diffHours < 24) {
+                            %><span class="text-danger"><%= diffHours %> hora(s)</span><%
+                          } else {
+                            const diffDays = Math.floor(diffHours / 24);
+                            %><span class="text-danger"><%= diffDays %> dia(s)</span><%
+                          }
+                        }
+                      %>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-12 text-center">
+                      <button id="checkStatusBtn" class="btn btn-outline-primary btn-sm" data-player-id="<%= player._id %>">
+                        <i class="bi bi-arrow-repeat me-1"></i> Verificar Status Agora
+                      </button>
+                      <div id="statusCheckResult" class="mt-2 small" style="display: none;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-4 font-weight-bold">Nome:</div>
+            <div class="col-md-8"><%= player.name %></div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-4 font-weight-bold">Descrição:</div>
+            <div class="col-md-8"><%= player.description || 'Sem descrição' %></div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-4 font-weight-bold">ID de Hardware:</div>
+            <div class="col-md-8"><code><%= player.hardware_id %></code></div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-4 font-weight-bold">Playlist Atual:</div>
+            <div class="col-md-8">
+              <% if (player.playlist) { %>
+                <a href="/playlists/<%= player.playlist._id %>"><%= player.playlist.name %></a>
+              <% } else { %>
+                <span class="text-muted">Nenhuma playlist atribuída</span>
+              <% } %>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-4 font-weight-bold">Mídia Atual:</div>
+            <div class="col-md-8">
+              <% if (player.current_media) { %>
+                <%= player.current_media %>
+              <% } else { %>
+                <span class="text-muted">Nenhuma mídia em reprodução</span>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Atribuir Playlist</h6>
+        </div>
+        <div class="card-body">
+          <form action="/players/<%= player._id %>/assign-playlist" method="POST">
+            <div class="form-group">
+              <label for="playlist_id">Selecione uma Playlist:</label>
+              <select class="form-control" id="playlist_id" name="playlist_id" required>
+                <option value="">Selecione uma playlist...</option>
+                <% playlists.forEach(playlist => { %>
+                  <option value="<%= playlist._id %>" <%= player.playlist && player.playlist._id.toString() === playlist._id.toString() ? 'selected' : '' %>>
+                    <%= playlist.name %>
+                  </option>
+                <% }); %>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Atribuir Playlist</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Logs do Player</h6>
+        </div>
+        <div class="card-body">
+          <% if (player.logs && player.logs.length > 0) { %>
+            <div class="logs-container" style="max-height: 400px; overflow-y: auto;">
+              <% player.logs.forEach(log => { %>
+                <% 
+                  let logClass = "border-info";
+                  let textClass = "";
+                  let icon = "";
+                  
+                  if (log.level === 'error') {
+                    logClass = "border-danger";
+                    textClass = "text-danger";
+                    icon = '<i class="bi bi-exclamation-triangle-fill me-1"></i>';
+                  } else if (log.level === 'warning') {
+                    logClass = "border-warning";
+                    textClass = "text-warning";
+                    icon = '<i class="bi bi-exclamation-triangle me-1"></i>';
+                  } else if (log.type === 'MEDIA_STUCK') {
+                    logClass = "border-danger bg-danger-subtle";
+                    textClass = "text-danger fw-bold";
+                    icon = '<i class="bi bi-bug-fill me-1"></i>';
+                  } else if (log.type === 'MEDIA_PLAYED') {
+                    logClass = "border-success";
+                    textClass = "text-success";
+                    icon = '<i class="bi bi-play-fill me-1"></i>';
+                  }
+                %>
+                <div class="log-entry mb-2 p-2 border-left <%= logClass %>">
+                  <div class="small text-muted"><%= new Date(log.timestamp).toLocaleString('pt-BR') %></div>
+                  <div class="<%= textClass %>">
+                    <%- icon %><%= log.message %>
+                  </div>
+                  <% if (log.type === 'MEDIA_STUCK' && log.data) { %>
+                    <div class="small mt-1 ps-3">
+                      <div><strong>Mídia:</strong> <%= log.data.mediaTitle || 'Desconhecida' %></div>
+                      <div><strong>Duração:</strong> <%= log.data.duration ? (log.data.duration + 's') : 'Desconhecida' %></div>
+                      <div><strong>Tempo travado:</strong> <%= log.data.stuckTime ? (log.data.stuckTime + 's') : 'Desconhecido' %></div>
+                    </div>
+                  <% } %>
+                </div>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <p class="text-center text-muted">Nenhum log disponível</p>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">QR Code de Configuração</h6>
+        </div>
+        <div class="card-body text-center">
+          <div id="qrcode" class="mb-3"></div>
+          <p class="small text-muted">Escaneie este QR Code com o aplicativo Gustavo Player para configurar automaticamente.</p>
+          <button class="btn btn-sm btn-outline-primary" onclick="copyConfigUrl()">
+            <i class="bi bi-clipboard"></i> Copiar URL
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode.js@1.0.0/qrcode.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Gerar QR Code com as informações de configuração
+    const configData = {
+      serverUrl: window.location.origin,
+      playerId: '<%= player._id %>',
+      hardwareId: '<%= player.hardware_id %>'
+    };
+    
+    const configUrl = `${window.location.origin}/api/players/config?data=${encodeURIComponent(JSON.stringify(configData))}`;
+    
+    new QRCode(document.getElementById("qrcode"), {
+      text: configUrl,
+      width: 128,
+      height: 128
+    });
+    
+    // Armazenar a URL para copiar
+    window.configUrl = configUrl;
+    
+    // Evento para o botão de verificar status
+    const checkStatusBtn = document.getElementById('checkStatusBtn');
+    if (checkStatusBtn) {
+      checkStatusBtn.addEventListener('click', function() {
+        console.log('Botão de verificar status clicado');
+        const playerId = this.getAttribute('data-player-id');
+        console.log('Player ID:', playerId);
+        const resultDiv = document.getElementById('statusCheckResult');
+        const statusCard = document.querySelector('.status-card');
+        const statusHeader = document.querySelector('.status-header');
+        const statusBadge = document.querySelector('.card-header .badge:first-child');
+        
+        // Desabilitar o botão e mostrar carregando
+        checkStatusBtn.disabled = true;
+        checkStatusBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Verificando...';
+        resultDiv.innerHTML = '<div class="text-primary">Verificando status do player...</div>';
+        resultDiv.style.display = 'block';
+        
+        // Configurar um timeout para considerar offline se não receber resposta em 5 segundos
+        const timeout = setTimeout(() => {
+          console.log('Timeout atingido, considerando player offline');
+          
+          // Atualizar interface para mostrar offline
+          resultDiv.innerHTML = '<div class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Sem resposta do player (offline).</div>';
+          statusCard.className = 'status-card border-secondary mb-3';
+          statusHeader.className = 'status-header bg-secondary text-white p-2';
+          statusHeader.innerHTML = '<h6 class="mb-0"><i class="bi bi-broadcast-pin"></i> Status: Offline</h6>';
+          if (statusBadge) {
+            statusBadge.className = 'badge bg-secondary';
+            statusBadge.innerHTML = '<i class="bi bi-broadcast-pin"></i> Offline';
+          }
+          
+          // Reabilitar o botão
+          checkStatusBtn.disabled = false;
+          checkStatusBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Verificar Status Agora';
+          
+          // Ocultar a mensagem após 5 segundos
+          setTimeout(() => {
+            resultDiv.style.display = 'none';
+          }, 5000);
+          
+        }, 5000); // 5 segundos de timeout
+        
+        // Fazer requisição para verificar o status - Corrigindo a URL
+        fetch(`/players/${playerId}/check-status`, {
+          method: 'POST',
+        })
+        .then(response => {
+          clearTimeout(timeout); // Limpar o timeout se receber resposta
+          return response.json();
+        })
+        .then(data => {
+          // Atualizar o resultado
+          if (data.status === 'online') {
+            resultDiv.innerHTML = '<div class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Player está online!</div>';
+            statusCard.className = 'status-card border-success mb-3';
+            statusHeader.className = 'status-header bg-success text-white p-2';
+            statusHeader.innerHTML = '<h6 class="mb-0"><i class="bi bi-broadcast"></i> Status: Online</h6>';
+            if (statusBadge) {
+              statusBadge.className = 'badge bg-success pulse-animation';
+              statusBadge.innerHTML = '<i class="bi bi-broadcast"></i> Online';
+            }
+          } else {
+            resultDiv.innerHTML = '<div class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Player está offline.</div>';
+            statusCard.className = 'status-card border-secondary mb-3';
+            statusHeader.className = 'status-header bg-secondary text-white p-2';
+            statusHeader.innerHTML = '<h6 class="mb-0"><i class="bi bi-broadcast-pin"></i> Status: Offline</h6>';
+            if (statusBadge) {
+              statusBadge.className = 'badge bg-secondary';
+              statusBadge.innerHTML = '<i class="bi bi-broadcast-pin"></i> Offline';
+            }
+          }
+          
+          // Atualizar a última conexão
+          if (data.last_connection) {
+            const lastConnectionEl = document.querySelector('.status-body .row:first-child .col-md-6:first-child p');
+            if (lastConnectionEl) {
+              const date = new Date(data.last_connection);
+              lastConnectionEl.innerHTML = `<strong>Última conexão:</strong><br>${date.toLocaleString('pt-BR')}`;
+            }
+          }
+          
+          // Reabilitar o botão
+          checkStatusBtn.disabled = false;
+          checkStatusBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Verificar Status Agora';
+          
+          // Ocultar a mensagem após 5 segundos
+          setTimeout(() => {
+            resultDiv.style.display = 'none';
+          }, 5000);
+        })
+        .catch(error => {
+          clearTimeout(timeout); // Limpar o timeout se receber erro
+          console.error('Erro ao verificar status:', error);
+          resultDiv.innerHTML = '<div class="text-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i> Erro ao verificar status.</div>';
+          
+          // Marcar como offline em caso de erro
+          statusCard.className = 'status-card border-secondary mb-3';
+          statusHeader.className = 'status-header bg-secondary text-white p-2';
+          statusHeader.innerHTML = '<h6 class="mb-0"><i class="bi bi-broadcast-pin"></i> Status: Offline</h6>';
+          if (statusBadge) {
+            statusBadge.className = 'badge bg-secondary';
+            statusBadge.innerHTML = '<i class="bi bi-broadcast-pin"></i> Offline';
+          }
+          
+          // Reabilitar o botão
+          checkStatusBtn.disabled = false;
+          checkStatusBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Verificar Status Agora';
+        });
+      });
+    }
+  });
+  
+  function copyConfigUrl() {
+    navigator.clipboard.writeText(window.configUrl).then(function() {
+      alert('URL de configuração copiada para a área de transferência!');
+    }, function() {
+      alert('Não foi possível copiar a URL. Por favor, tente novamente.');
+    });
+  }
+</script>
+
+<style>
+  .status-card {
+    border-radius: 4px;
+    border-width: 1px;
+    border-style: solid;
+    overflow: hidden;
+  }
+  
+  .status-header {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+  
+  .pulse-animation {
+    animation: pulse 2s infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(25, 135, 84, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 5px rgba(25, 135, 84, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(25, 135, 84, 0);
+    }
+  }
+</style> 

@@ -1,0 +1,173 @@
+<%- include('../partials/header', { title: title }) %>
+
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Criar Novo Template</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/templates">Templates</a></li>
+            <li class="breadcrumb-item active">Criar</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Novo Template</h3>
+              <div class="card-tools">
+                <a href="/templates" class="btn btn-secondary btn-sm">
+                  <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+              </div>
+            </div>
+            <div class="card-body">
+              <form action="/templates/create" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="name">Nome do Template *</label>
+                      <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="description">Descrição</label>
+                      <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                  </div>
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="htmlFile">Upload do arquivo HTML</label>
+                      <p class="text-muted small">
+                        Faça upload do arquivo HTML exportado do Template Builder. Elementos com variáveis dinâmicas 
+                        (que começam com "dynamic_") serão automaticamente detectados.
+                      </p>
+                      <input type="file" class="form-control" id="htmlFile" name="htmlFile" accept=".html">
+                    </div>
+                  </div>
+                  <div class="col-md-12 mt-3">
+                    <div class="form-group">
+                      <label for="htmlContent">Ou cole o conteúdo HTML</label>
+                      <p class="text-muted small">
+                        Você pode colar diretamente o código HTML exportado do Template Builder.
+                      </p>
+                      <textarea class="form-control" id="htmlContent" name="htmlContent" rows="12"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Template
+                  </button>
+                  <a href="/templates" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Função para analisar o HTML e encontrar variáveis dinâmicas
+    function parseTemplate() {
+      const htmlContent = document.getElementById('htmlContent').value;
+      
+      if (!htmlContent) return;
+      
+      // Cria um elemento temporário para analisar o HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      
+      // Conjunto para rastrear variáveis já processadas (evita duplicatas)
+      const processedVars = new Set();
+      const variables = [];
+      
+      // Busca por elementos com atributo data-var que começam com "dynamic_"
+      const elementsWithDataVar = tempDiv.querySelectorAll('[data-var]');
+      
+      elementsWithDataVar.forEach(element => {
+        const varName = element.getAttribute('data-var');
+        
+        if (varName && varName.startsWith('dynamic_') && !processedVars.has(varName)) {
+          processedVars.add(varName);
+          variables.push({
+            name: varName,
+            type: element.getAttribute('data-var-type') || 'text'
+          });
+        }
+      });
+      
+      // Também busca por elementos com atributo data-variable-name (para compatibilidade)
+      const elementsWithVariableName = tempDiv.querySelectorAll('[data-variable-name]');
+      
+      elementsWithVariableName.forEach(element => {
+        const varName = element.getAttribute('data-variable-name');
+        
+        if (varName && varName.startsWith('dynamic_') && !processedVars.has(varName)) {
+          processedVars.add(varName);
+          variables.push({
+            name: varName,
+            type: element.getAttribute('data-type') || 'text'
+          });
+        }
+      });
+      
+      // Exibe informações sobre as variáveis encontradas
+      const infoElement = document.getElementById('template-variables-info');
+      
+      if (infoElement) {
+        if (variables.length > 0) {
+          infoElement.innerHTML = `
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i> 
+              Encontradas ${variables.length} variáveis dinâmicas no template.
+              <ul>
+                ${variables.map(v => `<li>${v.name} (${v.type})</li>`).join('')}
+              </ul>
+            </div>
+          `;
+        } else {
+          infoElement.innerHTML = `
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i> 
+              Nenhuma variável dinâmica encontrada no template. Certifique-se de que os elementos editáveis 
+              possuem o atributo data-var ou data-variable-name começando com "dynamic_".
+            </div>
+          `;
+        }
+      }
+    }
+    
+    // Adiciona evento para analisar o template quando o conteúdo mudar
+    const htmlContentTextarea = document.getElementById('htmlContent');
+    
+    if (htmlContentTextarea) {
+      // Adiciona um elemento para exibir informações sobre variáveis
+      const infoContainer = document.createElement('div');
+      infoContainer.id = 'template-variables-info';
+      htmlContentTextarea.parentNode.appendChild(infoContainer);
+      
+      // Adiciona o evento
+      htmlContentTextarea.addEventListener('input', parseTemplate);
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %> 

@@ -1,0 +1,350 @@
+<%- include('../partials/header') %>
+
+<div class="container-fluid mt-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="mb-0"><i class="bi bi-play-circle-fill me-2 text-success"></i>Visualizando: <%= playlist.name %></h1>
+        <div>
+          <a href="/playlists/<%= playlist._id %>" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Voltar para Playlist
+          </a>
+        </div>
+      </div>
+      <hr>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0"><i class="bi bi-collection-play me-2"></i>Visualizador de Playlist</h5>
+        </div>
+        <div class="card-body">
+          <% if (playlist.items && playlist.items.length > 0) { %>
+            <div class="row">
+              <div class="col-md-8">
+                <div class="preview-container mb-4" style="background-color: #000; position: relative; width: 100%; height: 0; padding-bottom: 56.25%;">
+                  <% 
+                    // Encontrar o primeiro item
+                    const firstItem = playlist.items.sort((a, b) => a.order - b.order)[0];
+                    let mediaUrl = '';
+                    let mediaType = '';
+                    
+                    if (firstItem && firstItem.media) {
+                      mediaUrl = `/api/media/${firstItem.media._id}/file`;
+                      mediaType = firstItem.media.type;
+                    }
+                  %>
+                  
+                  <div id="media-player" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                    <% if (mediaType === 'image') { %>
+                      <img src="<%= mediaUrl %>" id="current-media" class="img-fluid" style="width: 100%; height: 100%; object-fit: contain;" alt="Preview">
+                    <% } else if (mediaType === 'video') { %>
+                      <video id="current-media" controls style="width: 100%; height: 100%;">
+                        <source src="<%= mediaUrl %>" type="video/mp4">
+                        Seu navegador não suporta a reprodução de vídeos.
+                      </video>
+                    <% } else { %>
+                      <div class="d-flex justify-content-center align-items-center h-100 bg-dark text-white">
+                        <p class="mb-0">Nenhuma mídia para exibir</p>
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mb-3">
+                  <button id="prev-btn" class="btn btn-outline-primary" <%= playlist.items.length <= 1 ? 'disabled' : '' %>>
+                    <i class="bi bi-skip-backward-fill me-2"></i>Anterior
+                  </button>
+                  <button id="play-pause-btn" class="btn btn-success">
+                    <i class="bi bi-play-fill me-2" id="play-icon"></i><span id="play-text">Iniciar</span>
+                  </button>
+                  <button id="next-btn" class="btn btn-outline-primary" <%= playlist.items.length <= 1 ? 'disabled' : '' %>>
+                    <i class="bi bi-skip-forward-fill me-2"></i>Próximo
+                  </button>
+                </div>
+                
+                <div class="progress mb-3">
+                  <div id="progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                
+                <div class="d-flex justify-content-between text-muted small">
+                  <span id="current-time">00:00</span>
+                  <span id="total-time">00:00</span>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="card">
+                  <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-list-ul me-2"></i>Itens da Playlist</h5>
+                  </div>
+                  <div class="card-body p-0">
+                    <div class="list-group list-group-flush" id="playlist-items">
+                      <% playlist.items.sort((a, b) => a.order - b.order).forEach((item, index) => { %>
+                        <button class="list-group-item list-group-item-action d-flex align-items-center playlist-item <%= index === 0 ? 'active' : '' %>" 
+                                data-index="<%= index %>"
+                                data-media-id="<%= item.media._id %>"
+                                data-media-type="<%= item.media.type %>"
+                                data-media-url="/api/media/<%= item.media._id %>/file"
+                                data-duration="<%= item.duration || 0 %>">
+                          <div class="me-3">
+                            <span class="badge <%= index === 0 ? 'bg-success' : 'bg-secondary' %>"><%= index + 1 %></span>
+                          </div>
+                          <div class="media-preview me-3">
+                            <% if (item.media.type === 'image') { %>
+                              <img src="/api/media/<%= item.media._id %>/file" alt="<%= item.media.name %>" class="img-thumbnail" style="width: 50px; height: 40px; object-fit: cover;">
+                            <% } else if (item.media.type === 'video') { %>
+                              <div class="position-relative" style="width: 50px; height: 40px;">
+                                <img src="/api/media/thumbnail/<%= item.media._id %>" alt="<%= item.media.name %>" class="img-thumbnail" style="width: 100%; height: 100%; object-fit: cover;">
+                                <div class="position-absolute top-50 start-50 translate-middle text-white">
+                                  <i class="bi bi-play-circle-fill"></i>
+                                </div>
+                              </div>
+                            <% } %>
+                          </div>
+                          <div class="text-start overflow-hidden">
+                            <div class="text-truncate"><%= item.media.name %></div>
+                            <small class="text-muted">
+                              <i class="bi bi-<%= item.media.type === 'image' ? 'image' : 'film' %> me-1"></i>
+                              <% if (item.duration) { %>
+                                <span><%= item.duration %> seg</span>
+                              <% } %>
+                            </small>
+                          </div>
+                        </button>
+                      <% }); %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% } else { %>
+            <div class="text-center py-5">
+              <i class="bi bi-collection-play text-muted icon-large mb-3" style="font-size: 4rem;"></i>
+              <h4>Nenhum item na playlist</h4>
+              <p class="text-muted">Esta playlist não possui itens para visualização.</p>
+              <a href="/playlists/<%= playlist._id %>" class="btn btn-primary mt-2">
+                <i class="bi bi-arrow-left me-2"></i>Voltar para Playlist
+              </a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Elementos do player
+    const mediaPlayer = document.getElementById('media-player');
+    const currentMedia = document.getElementById('current-media');
+    const playlistItems = document.querySelectorAll('.playlist-item');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const playIcon = document.getElementById('play-icon');
+    const playText = document.getElementById('play-text');
+    const progressBar = document.getElementById('progress-bar');
+    const currentTimeEl = document.getElementById('current-time');
+    const totalTimeEl = document.getElementById('total-time');
+    
+    // Variáveis de controle
+    let currentIndex = 0;
+    let isPlaying = false;
+    let timer = null;
+    let duration = 0;
+    let currentTime = 0;
+    
+    // Inicializar o player
+    if (playlistItems.length > 0) {
+      const firstItem = playlistItems[0];
+      duration = parseInt(firstItem.dataset.duration) || 10;
+      updateTotalTime();
+    }
+    
+    // Função para formatar tempo (segundos para MM:SS)
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // Atualizar o tempo total
+    function updateTotalTime() {
+      totalTimeEl.textContent = formatTime(duration);
+    }
+    
+    // Atualizar o tempo atual
+    function updateCurrentTime() {
+      currentTimeEl.textContent = formatTime(currentTime);
+      const progress = (currentTime / duration) * 100;
+      progressBar.style.width = `${progress}%`;
+    }
+    
+    // Reproduzir o item atual
+    function playCurrentItem() {
+      if (playlistItems.length === 0) return;
+      
+      // Atualizar item ativo
+      playlistItems.forEach(item => {
+        item.classList.remove('active');
+        const badge = item.querySelector('.badge');
+        if (badge) badge.classList.replace('bg-success', 'bg-secondary');
+      });
+      
+      const currentItem = playlistItems[currentIndex];
+      currentItem.classList.add('active');
+      const badge = currentItem.querySelector('.badge');
+      if (badge) badge.classList.replace('bg-secondary', 'bg-success');
+      
+      // Obter dados do item
+      const mediaType = currentItem.dataset.mediaType;
+      const mediaUrl = currentItem.dataset.mediaUrl;
+      duration = parseInt(currentItem.dataset.duration) || 10;
+      
+      // Atualizar o player
+      if (mediaType === 'image') {
+        mediaPlayer.innerHTML = `<img src="${mediaUrl}" id="current-media" class="img-fluid" style="width: 100%; height: 100%; object-fit: contain;" alt="Preview">`;
+      } else if (mediaType === 'video') {
+        mediaPlayer.innerHTML = `
+          <video id="current-media" controls style="width: 100%; height: 100%;">
+            <source src="${mediaUrl}" type="video/mp4">
+            Seu navegador não suporta a reprodução de vídeos.
+          </video>
+        `;
+        
+        const videoElement = mediaPlayer.querySelector('video');
+        if (videoElement) {
+          videoElement.onplay = function() {
+            isPlaying = true;
+            updatePlayPauseButton();
+          };
+          
+          videoElement.onpause = function() {
+            isPlaying = false;
+            updatePlayPauseButton();
+          };
+          
+          videoElement.onended = function() {
+            nextItem();
+          };
+        }
+      }
+      
+      // Resetar o tempo
+      currentTime = 0;
+      updateCurrentTime();
+      updateTotalTime();
+      
+      // Se estiver reproduzindo, iniciar o timer
+      if (isPlaying) {
+        startTimer();
+      }
+    }
+    
+    // Iniciar o timer
+    function startTimer() {
+      clearInterval(timer);
+      
+      const currentItem = playlistItems[currentIndex];
+      const mediaType = currentItem.dataset.mediaType;
+      
+      // Para vídeos, o próprio elemento controla a reprodução
+      if (mediaType === 'video') {
+        const videoElement = mediaPlayer.querySelector('video');
+        if (videoElement) {
+          videoElement.play();
+        }
+        return;
+      }
+      
+      // Para imagens, usamos um timer
+      timer = setInterval(() => {
+        currentTime += 1;
+        updateCurrentTime();
+        
+        if (currentTime >= duration) {
+          clearInterval(timer);
+          nextItem();
+        }
+      }, 1000);
+    }
+    
+    // Pausar o timer
+    function pauseTimer() {
+      clearInterval(timer);
+      
+      const currentItem = playlistItems[currentIndex];
+      const mediaType = currentItem.dataset.mediaType;
+      
+      // Para vídeos, pausar o elemento
+      if (mediaType === 'video') {
+        const videoElement = mediaPlayer.querySelector('video');
+        if (videoElement) {
+          videoElement.pause();
+        }
+      }
+    }
+    
+    // Atualizar o botão de play/pause
+    function updatePlayPauseButton() {
+      if (isPlaying) {
+        playIcon.classList.replace('bi-play-fill', 'bi-pause-fill');
+        playText.textContent = 'Pausar';
+      } else {
+        playIcon.classList.replace('bi-pause-fill', 'bi-play-fill');
+        playText.textContent = 'Iniciar';
+      }
+    }
+    
+    // Ir para o próximo item
+    function nextItem() {
+      if (playlistItems.length <= 1) return;
+      
+      currentIndex = (currentIndex + 1) % playlistItems.length;
+      playCurrentItem();
+    }
+    
+    // Ir para o item anterior
+    function prevItem() {
+      if (playlistItems.length <= 1) return;
+      
+      currentIndex = (currentIndex - 1 + playlistItems.length) % playlistItems.length;
+      playCurrentItem();
+    }
+    
+    // Event listeners
+    playPauseBtn.addEventListener('click', function() {
+      isPlaying = !isPlaying;
+      updatePlayPauseButton();
+      
+      if (isPlaying) {
+        startTimer();
+      } else {
+        pauseTimer();
+      }
+    });
+    
+    nextBtn.addEventListener('click', function() {
+      nextItem();
+    });
+    
+    prevBtn.addEventListener('click', function() {
+      prevItem();
+    });
+    
+    // Clicar em um item da playlist
+    playlistItems.forEach((item, index) => {
+      item.addEventListener('click', function() {
+        currentIndex = index;
+        playCurrentItem();
+      });
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %> 

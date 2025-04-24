@@ -1,0 +1,181 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="bi bi-diagram-3 me-2 text-primary"></i>
+                <%= locals.group ? 'Editar Grupo' : 'Novo Grupo' %>
+            </h1>
+            <a href="/groups" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar para Grupos
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form action="<%= locals.group ? '/groups/' + group._id + '/update' : '/groups/create' %>" method="POST" class="needs-validation" novalidate>
+                    <div class="mb-4">
+                        <label for="name" class="form-label">Nome do Grupo <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" value="<%= locals.group ? group.name : '' %>" required>
+                        <div class="invalid-feedback">
+                            Por favor, informe um nome para o grupo.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"><%= locals.group ? group.description : '' %></textarea>
+                        <div class="form-text">Uma breve descrição sobre o propósito deste grupo.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Permissões</label>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="canManageUsers" name="permissions[canManageUsers]" 
+                                                    <%= locals.group && group.permissions && group.permissions.canManageUsers ? 'checked' : '' %>>
+                                                <label class="form-check-label" for="canManageUsers">Gerenciar Usuários</label>
+                                            </div>
+                                            <div class="form-text">Permite criar, editar e excluir usuários.</div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="canManageMedia" name="permissions[canManageMedia]" 
+                                                    <%= locals.group && group.permissions && group.permissions.canManageMedia ? 'checked' : '' %>>
+                                                <label class="form-check-label" for="canManageMedia">Gerenciar Mídias</label>
+                                            </div>
+                                            <div class="form-text">Permite fazer upload, editar e excluir mídias.</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="canManagePlaylists" name="permissions[canManagePlaylists]" 
+                                                    <%= locals.group && group.permissions && group.permissions.canManagePlaylists ? 'checked' : '' %>>
+                                                <label class="form-check-label" for="canManagePlaylists">Gerenciar Playlists</label>
+                                            </div>
+                                            <div class="form-text">Permite criar, editar e excluir playlists.</div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="canManagePlayers" name="permissions[canManagePlayers]" 
+                                                    <%= locals.group && group.permissions && group.permissions.canManagePlayers ? 'checked' : '' %>>
+                                                <label class="form-check-label" for="canManagePlayers">Gerenciar Players</label>
+                                            </div>
+                                            <div class="form-text">Permite configurar e monitorar players.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="isAdmin" name="permissions[isAdmin]" 
+                                            <%= locals.group && group.permissions && group.permissions.isAdmin ? 'checked' : '' %>>
+                                        <label class="form-check-label" for="isAdmin">Administrador</label>
+                                    </div>
+                                    <div class="form-text text-warning">Concede acesso total ao sistema. Use com cautela.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Status</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="active" name="active" 
+                                <%= !locals.group || (locals.group && group.active !== false) ? 'checked' : '' %>>
+                            <label class="form-check-label" for="active">Ativo</label>
+                        </div>
+                        <div class="form-text">Grupos inativos não podem ser associados a novos usuários ou recursos.</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-5">
+                        <a href="/groups" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i><%= locals.group ? 'Atualizar Grupo' : 'Criar Grupo' %>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informações</h5>
+            </div>
+            <div class="card-body">
+                <p>Os grupos são utilizados para organizar usuários e controlar o acesso a recursos no sistema.</p>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Defina permissões específicas para cada grupo</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Organize usuários por departamento ou função</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Controle quais mídias e playlists cada grupo pode acessar</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Associe players a grupos específicos</li>
+                </ul>
+            </div>
+        </div>
+
+        <% if (locals.group) { %>
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Estatísticas do Grupo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>Usuários</div>
+                        <span class="badge bg-primary"><%= group.userCount || 0 %></span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>Mídias</div>
+                        <span class="badge bg-info"><%= group.mediaCount || 0 %></span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>Playlists</div>
+                        <span class="badge bg-success"><%= group.playlistCount || 0 %></span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>Players</div>
+                        <span class="badge bg-warning"><%= group.playerCount || 0 %></span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">Criado em: <%= new Date(group.createdAt).toLocaleDateString() %></small>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    // Validação do formulário
+    (function() {
+        'use strict';
+        
+        // Fetch all forms we want to apply validation to
+        var forms = document.querySelectorAll('.needs-validation');
+        
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script> 

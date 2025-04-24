@@ -1,0 +1,184 @@
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="/media">Mídias</a></li>
+          <li class="breadcrumb-item active" aria-current="page"><%= media.name %></li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Detalhes da Mídia</h5>
+          <div>
+            <a href="/media/<%= media._id %>/edit" class="btn btn-sm btn-primary">
+              <i class="bi bi-pencil"></i> Editar
+            </a>
+            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+              <i class="bi bi-trash"></i> Excluir
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6>Informações</h6>
+              <table class="table">
+                <tr>
+                  <th style="width: 150px;">Nome:</th>
+                  <td><%= media.name %></td>
+                </tr>
+                <tr>
+                  <th>Descrição:</th>
+                  <td><%= media.description || 'Sem descrição' %></td>
+                </tr>
+                <tr>
+                  <th>Tipo:</th>
+                  <td><%= media.type === 'image' ? 'Imagem' : (media.type === 'video' ? 'Vídeo' : 'HTML') %></td>
+                </tr>
+                <tr>
+                  <th>Grupo:</th>
+                  <td><%= media.group ? media.group.name : 'Sem grupo' %></td>
+                </tr>
+                <tr>
+                  <th>Enviado por:</th>
+                  <td><%= media.uploadedBy ? media.uploadedBy.name : 'Desconhecido' %></td>
+                </tr>
+                <tr>
+                  <th>Data de envio:</th>
+                  <td><%= new Date(media.createdAt).toLocaleString() %></td>
+                </tr>
+                <tr>
+                  <th>Última atualização:</th>
+                  <td><%= new Date(media.updatedAt).toLocaleString() %></td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6 text-center">
+              <h6>Pré-visualização</h6>
+              <div class="preview-container mt-3">
+                <% if (media.type === 'image') { %>
+                  <img src="<%= media.url %>" alt="<%= media.name %>" class="img-fluid preview-image" style="max-height: 300px; cursor: pointer;" onclick="openMediaModal()">
+                <% } else if (media.type === 'video') { %>
+                  <video controls class="img-fluid" style="max-height: 300px;">
+                    <source src="<%= media.url %>" type="video/mp4">
+                    Seu navegador não suporta a reprodução de vídeos.
+                  </video>
+                <% } else if (media.type === 'html') { %>
+                  <div class="html-preview position-relative" style="height: 300px; border: 1px solid #ddd; border-radius: 4px;">
+                    <iframe src="<%= media.url %>" style="width: 100%; height: 100%; border: none;"></iframe>
+                    <button class="btn btn-sm btn-primary position-absolute top-0 end-0 m-2" onclick="openFullscreenPreview('<%= media.url %>')">
+                      <i class="bi bi-arrows-fullscreen"></i> Ver em tela cheia
+                    </button>
+                  </div>
+                <% } %>
+              </div>
+              <div class="mt-3">
+                <button class="btn btn-primary" onclick="openMediaModal()">
+                  <i class="bi bi-zoom-in"></i> Ampliar
+                </button>
+                <a href="<%= media.url %>" class="btn btn-secondary" target="_blank">
+                  <i class="bi bi-box-arrow-up-right"></i> Abrir em nova aba
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirmar exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Tem certeza que deseja excluir a mídia "<%= media.name %>"?</p>
+        <p class="text-danger">Esta ação não pode ser desfeita.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a href="/media/<%= media._id %>/delete" class="btn btn-danger">Excluir</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para visualização ampliada -->
+<div class="modal fade" id="mediaModal" tabindex="-1" aria-labelledby="mediaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mediaModalLabel"><%= media.name %></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <% if (media.type === 'image') { %>
+          <img src="<%= media.url %>" alt="<%= media.name %>" class="img-fluid">
+        <% } else if (media.type === 'video') { %>
+          <video controls class="img-fluid" style="max-height: 80vh;">
+            <source src="<%= media.url %>" type="video/mp4">
+            Seu navegador não suporta a reprodução de vídeos.
+          </video>
+        <% } %>
+      </div>
+      <div class="modal-footer">
+        <a href="<%= media.url %>" class="btn btn-primary" download>
+          <i class="bi bi-download"></i> Download
+        </a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para preview de HTML em tela cheia -->
+<div class="modal fade" id="htmlPreviewModal" tabindex="-1" aria-labelledby="htmlPreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="htmlPreviewModalLabel"><%= media.name %></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body p-0">
+        <iframe id="fullscreenHtmlPreview" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Função para abrir o modal de mídia
+    window.openMediaModal = function() {
+      var mediaModal = new bootstrap.Modal(document.getElementById('mediaModal'));
+      mediaModal.show();
+    };
+    
+    // Função para abrir preview de HTML em tela cheia
+    window.openFullscreenPreview = function(url) {
+      document.getElementById('fullscreenHtmlPreview').src = url;
+      var htmlModal = new bootstrap.Modal(document.getElementById('htmlPreviewModal'));
+      htmlModal.show();
+    };
+    
+    // Adicionar evento de clique à imagem de pré-visualização
+    var previewImage = document.querySelector('.preview-image');
+    if (previewImage) {
+      previewImage.addEventListener('click', function() {
+        openMediaModal();
+      });
+    }
+  });
+</script> 

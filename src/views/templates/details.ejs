@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Template - <%= template.name %> - CMS</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/templates.css">
+</head>
+<body>
+    <!-- Main Content -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="mb-0">
+                        <i class="bi bi-code-square me-2 text-primary"></i>
+                        <%= template.name %>
+                    </h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0 mt-2">
+                            <li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
+                            <li class="breadcrumb-item"><a href="/templates">Templates</a></li>
+                            <li class="breadcrumb-item active"><%= template.name %></li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="/templates/edit/<%= template._id %>" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil me-2"></i>Editar Template
+                    </a>
+                    <a href="/templates/message/<%= template._id %>" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Nova Mensagem
+                    </a>
+                </div>
+            </div>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Coluna da Esquerda - Preview e Informações -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white p-0 border-bottom-0">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active px-4 py-3" data-bs-toggle="tab" data-bs-target="#preview" type="button" role="tab">
+                                <i class="bi bi-eye me-2"></i>Prévia
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link px-4 py-3" data-bs-toggle="tab" data-bs-target="#variables" type="button" role="tab">
+                                <i class="bi bi-code me-2"></i>Variáveis
+                                <span class="badge bg-primary rounded-pill ms-1"><%= template.variables ? template.variables.length : 0 %></span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link px-4 py-3" data-bs-toggle="tab" data-bs-target="#messages" type="button" role="tab">
+                                <i class="bi bi-envelope me-2"></i>Mensagens
+                                <span class="badge bg-primary rounded-pill ms-1"><%= messages ? messages.length : 0 %></span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-0">
+                    <div class="tab-content">
+                        <!-- Aba de Prévia -->
+                        <div class="tab-pane fade show active" id="preview" role="tabpanel">
+                            <div class="ratio ratio-16x9" style="min-height: 500px;">
+                                <iframe src="/templates/preview/<%= template._id %>" frameborder="0" class="border-0"></iframe>
+                            </div>
+                        </div>
+
+                        <!-- Aba de Variáveis -->
+                        <div class="tab-pane fade p-4" id="variables" role="tabpanel">
+                            <% if (template.variables && template.variables.length > 0) { %>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome</th>
+                                                <th>Tipo</th>
+                                                <th>Valor Padrão</th>
+                                                <th style="width: 100px;">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% template.variables.forEach(variable => { %>
+                                                <tr>
+                                                    <td><%= variable.name %></td>
+                                                    <td>
+                                                        <span class="badge bg-primary">
+                                                            <i class="bi bi-<%= variable.type === 'text' ? 'type' : (variable.type === 'image' ? 'image' : 'palette') %> me-1"></i>
+                                                            <%= variable.type.toUpperCase() %>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <% if (variable.type === 'image') { %>
+                                                            <img src="<%= variable.value || '/img/placeholder.png' %>" 
+                                                                 alt="Preview" 
+                                                                 class="img-thumbnail"
+                                                                 style="max-width: 100px;">
+                                                        <% } else { %>
+                                                            <%= variable.value || '-' %>
+                                                        <% } %>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="editVariable('<%= variable.name %>')">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } else { %>
+                                <div class="text-center py-5">
+                                    <i class="bi bi-code-square display-1 text-muted mb-3"></i>
+                                    <h4>Nenhuma variável encontrada</h4>
+                                    <p class="text-muted">Este template não possui variáveis para personalizar.</p>
+                                </div>
+                            <% } %>
+                        </div>
+
+                        <!-- Aba de Mensagens -->
+                        <div class="tab-pane fade p-4" id="messages" role="tabpanel">
+                            <% if (messages && messages.length > 0) { %>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Nome</th>
+                                                <th>Criado em</th>
+                                                <th>Status</th>
+                                                <th style="width: 120px;">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% messages.forEach(message => { %>
+                                                <tr>
+                                                    <td>
+                                                        <strong><%= message.name %></strong>
+                                                        <% if (message.description) { %>
+                                                            <br>
+                                                            <small class="text-muted"><%= message.description %></small>
+                                                        <% } %>
+                                                    </td>
+                                                    <td>
+                                                        <%= new Date(message.createdAt).toLocaleDateString() %>
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            por <%= message.createdBy ? message.createdBy.name : 'Sistema' %>
+                                                        </small>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-<%= message.active ? 'success' : 'secondary' %>">
+                                                            <i class="bi bi-<%= message.active ? 'check-circle' : 'dash-circle' %> me-1"></i>
+                                                            <%= message.active ? 'Ativo' : 'Inativo' %>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <a href="/messages/<%= message._id %>" class="btn btn-sm btn-outline-primary" title="Ver mensagem">
+                                                                <i class="bi bi-eye"></i>
+                                                            </a>
+                                                            <button type="button" 
+                                                                    class="btn btn-sm btn-outline-danger" 
+                                                                    title="Excluir"
+                                                                    onclick="confirmDeleteMessage('<%= message._id %>', '<%= message.name %>')">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <% } else { %>
+                                <div class="text-center py-5">
+                                    <i class="bi bi-envelope display-1 text-muted mb-3"></i>
+                                    <h4>Nenhuma mensagem encontrada</h4>
+                                    <p class="text-muted">Ainda não existem mensagens criadas a partir deste template.</p>
+                                    <a href="/templates/message/<%= template._id %>" class="btn btn-primary mt-3">
+                                        <i class="bi bi-plus-circle me-2"></i>Criar Mensagem
+                                    </a>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna da Direita - Informações do Template -->
+        <div class="col-lg-4 mb-4">
+            <!-- Card de Informações -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">Informações do Template</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted mb-1">Status</label>
+                        <div>
+                            <span class="badge bg-<%= template.active ? 'success' : 'secondary' %> p-2">
+                                <i class="bi bi-<%= template.active ? 'check-circle' : 'dash-circle' %> me-1"></i>
+                                <%= template.active ? 'Ativo' : 'Inativo' %>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted mb-1">Grupo</label>
+                        <div>
+                            <% if (template.group) { %>
+                                <span class="badge bg-primary p-2">
+                                    <i class="bi bi-people me-1"></i>
+                                    <%= template.group.name %>
+                                </span>
+                            <% } else { %>
+                                <span class="text-muted">Nenhum grupo associado</span>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted mb-1">Criado em</label>
+                        <div>
+                            <%= new Date(template.createdAt).toLocaleDateString() %>
+                            <% if (template.createdBy) { %>
+                                <br>
+                                <small class="text-muted">por <%= template.createdBy.name %></small>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label text-muted mb-1">Última modificação</label>
+                        <div>
+                            <%= new Date(template.updatedAt).toLocaleDateString() %>
+                            <% if (template.lastModifiedBy) { %>
+                                <br>
+                                <small class="text-muted">por <%= template.lastModifiedBy.name %></small>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Estatísticas -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">Estatísticas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-0">
+                        <div class="col-6 border-end border-bottom p-3">
+                            <h3 class="mb-1"><%= messages ? messages.length : 0 %></h3>
+                            <small class="text-muted">Mensagens Criadas</small>
+                        </div>
+                        <div class="col-6 border-bottom p-3">
+                            <h3 class="mb-1"><%= template.variables ? template.variables.length : 0 %></h3>
+                            <small class="text-muted">Variáveis</small>
+                        </div>
+                        <div class="col-6 border-end p-3">
+                            <h3 class="mb-1"><%= activeMessages %></h3>
+                            <small class="text-muted">Mensagens Ativas</small>
+                        </div>
+                        <div class="col-6 p-3">
+                            <h3 class="mb-1"><%= inactiveMessages %></h3>
+                            <small class="text-muted">Mensagens Inativas</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir o template <strong><%= template.name %></strong>?</p>
+                    <p class="text-danger mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Esta ação não pode ser desfeita e também excluirá todas as mensagens criadas a partir deste template.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form action="/templates/delete/<%= template._id %>" method="POST" style="display: inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i>Excluir Template
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão de Mensagem -->
+    <div class="modal fade" id="deleteMessageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir a mensagem <strong id="messageNameToDelete"></strong>?</p>
+                    <p class="text-danger mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Esta ação não pode ser desfeita.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form id="deleteMessageForm" action="" method="POST" style="display: inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i>Excluir Mensagem
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para confirmar exclusão do template
+        function confirmDelete() {
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+
+        // Função para confirmar exclusão de mensagem
+        function confirmDeleteMessage(messageId, messageName) {
+            document.getElementById('messageNameToDelete').textContent = messageName;
+            document.getElementById('deleteMessageForm').action = `/messages/delete/${messageId}`;
+            new bootstrap.Modal(document.getElementById('deleteMessageModal')).show();
+        }
+
+        // Função para editar variável
+        function editVariable(variableName) {
+            // Implementar lógica de edição de variável
+            console.log('Editar variável:', variableName);
+        }
+    </script>
+</body>
+</html> 

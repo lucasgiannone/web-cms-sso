@@ -1,0 +1,172 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0"><i class="bi bi-people me-2 text-primary"></i>Usuários</h1>
+            <a href="/users/new" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Novo Usuário
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="tableFilter" data-table-target="#userTable" placeholder="Filtrar usuários...">
+        </div>
+    </div>
+    <div class="col-md-6">
+        <select class="form-select" id="groupFilter">
+            <option value="all">Todos os grupos</option>
+            <% if (locals.groups && locals.groups.length > 0) { %>
+                <% locals.groups.forEach(function(group) { %>
+                    <option value="<%= group._id %>"><%= group.name %></option>
+                <% }); %>
+            <% } %>
+        </select>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <% if (locals.users && users.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="userTable">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Grupo</th>
+                                    <th>Perfil</th>
+                                    <th>Status</th>
+                                    <th>Criado em</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% users.forEach(function(user) { %>
+                                    <tr data-group="<%= user.group ? user.group._id : 'none' %>">
+                                        <td><%= user.name %></td>
+                                        <td><%= user.email %></td>
+                                        <td>
+                                            <% if (user.group) { %>
+                                                <span class="badge bg-secondary"><%= user.group.name %></span>
+                                            <% } else { %>
+                                                <span class="text-muted">Sem grupo</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <% if (user.isAdmin) { %>
+                                                <span class="badge bg-danger">Administrador</span>
+                                            <% } else { %>
+                                                <span class="badge bg-info">Usuário</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <% if (user.active) { %>
+                                                <span class="badge bg-success">Ativo</span>
+                                            <% } else { %>
+                                                <span class="badge bg-danger">Inativo</span>
+                                            <% } %>
+                                        </td>
+                                        <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="/users/<%= user._id %>" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="/users/<%= user._id %>/edit" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a href="/users/<%= user._id %>/delete" class="btn btn-sm btn-outline-danger btn-delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <% if (locals.pagination) { %>
+                        <div class="d-flex justify-content-center mt-4">
+                            <nav aria-label="Navegação de páginas">
+                                <ul class="pagination">
+                                    <% if (pagination.currentPage > 1) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="/users?page=<%= pagination.currentPage - 1 %>" aria-label="Anterior">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Anterior">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                                        <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                                            <a class="page-link" href="/users?page=<%= i %>"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% if (pagination.currentPage < pagination.totalPages) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="/users?page=<%= pagination.currentPage + 1 %>" aria-label="Próximo">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Próximo">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="bi bi-people text-muted icon-large mb-3"></i>
+                        <h5>Nenhum usuário encontrado</h5>
+                        <p class="text-muted">Adicione usuários para permitir acesso ao sistema.</p>
+                        <a href="/users/new" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle me-2"></i>Adicionar Usuário
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filtro por grupo
+        const groupFilter = document.getElementById('groupFilter');
+        
+        if (groupFilter) {
+            groupFilter.addEventListener('change', function() {
+                const groupValue = this.value;
+                const rows = document.querySelectorAll('#userTable tbody tr');
+                
+                rows.forEach(row => {
+                    if (groupValue === 'all' || row.dataset.group === groupValue) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script> 

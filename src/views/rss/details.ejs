@@ -1,0 +1,108 @@
+<%- contentFor('body') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Detalhes da Fonte RSS</h1>
+    <div>
+        <a href="/playlists/add?rssId=<%= rssItem._id %>" class="btn btn-success">
+            <i class="bi bi-plus-circle me-2"></i> Adicionar à Playlist
+        </a>
+        <a href="/rss/edit/<%= rssItem._id %>" class="btn btn-primary">
+            <i class="bi bi-pencil me-2"></i> Editar
+        </a>
+        <a href="/rss" class="btn btn-outline-secondary ms-2">
+            <i class="bi bi-arrow-left me-2"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Informações da Fonte</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nome</label>
+                    <p><%= rssItem.name %></p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Descrição</label>
+                    <p><%= rssItem.description || 'Nenhuma descrição fornecida' %></p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">URL</label>
+                    <p>
+                        <a href="<%= rssItem.url %>" target="_blank" class="text-break">
+                            <%= rssItem.url %>
+                            <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                        </a>
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Fonte</label>
+                    <p><%= rssItem.source %></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 d-flex align-items-center">
+                    <span class="me-2">Status:</span>
+                    <% if (rssItem.active) { %>
+                        <span class="badge bg-success">Ativo</span>
+                    <% } else { %>
+                        <span class="badge bg-danger">Inativo</span>
+                    <% } %>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Grupo</label>
+                    <p><%= rssItem.group ? rssItem.group.name : 'N/A' %></p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Criado por</label>
+                    <p><%= rssItem.createdBy ? rssItem.createdBy.name : 'N/A' %></p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Data de criação</label>
+                    <p><%= new Date(rssItem.createdAt).toLocaleString() %></p>
+                </div>
+                
+                <% if (rssItem.lastModifiedBy) { %>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Última modificação por</label>
+                        <p><%= rssItem.lastModifiedBy.name %></p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Data da última modificação</label>
+                        <p><%= new Date(rssItem.updatedAt).toLocaleString() %></p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Visualização do Feed</h5>
+    </div>
+    <div class="card-body">
+        <div class="ratio ratio-16x9">
+            <iframe src="<%= rssItem.url %>" title="<%= rssItem.name %>" allowfullscreen></iframe>
+        </div>
+    </div>
+</div> 

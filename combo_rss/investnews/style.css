@@ -1,0 +1,293 @@
+html,body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+body {
+    background-color: #000;
+}
+
+/** Horizontal */
+/*720p*/
+@media (width:1280px) and (height:720px) {
+
+    body {
+        background-image : url('./default/assets/fundo.png');
+        background-size: cover;
+    }
+
+    #img {
+        background-image: url('');
+        background-size:cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        width: 250px;
+        height: 250px;
+        position: absolute;
+        top: 25%;
+        left: 76%;
+        z-index: 0;
+        /* border : 1px solid red; */
+        border-radius: 50%;
+        
+        
+    }
+
+
+    #topbar {
+        position: absolute;
+        top: 2.5%;
+        left: 5%;
+        width: 50%;
+        height: 15%;
+        z-index: 1
+    }
+
+    #topbar>img {
+        position: absolute;
+        top: 7.5%;
+        left: 1.5%;
+        height: 80px;
+        width: 80pxpx;
+        z-index: 1
+    }
+
+    #title {}
+
+    
+    
+    #title {
+        position: absolute;
+        top: 17%;
+        left: 6%;
+        padding: 25px;
+        /* background-color: rgba(15, 15, 15, .9); */
+        z-index: 2;
+        color: #e71082;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 3em;
+        font-weight: 700;
+        width: 85%;
+        /* border : 1px solid red; */
+    }
+    #bar {
+        position: absolute;
+        top: 46%;
+        left: 8%;
+        width: 70%;
+        height: 50%;
+        /* border : 1px solid red; */
+        z-index: 1
+    }
+    #content {
+        position: absolute;
+        top: 0%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        /* border : 1px solid red; */
+        overflow: visible
+    }
+
+    #description {
+        position: absolute;
+        left:0 ;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        color: #fff;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 2em
+    }
+}
+
+/*1080p*/
+@media (width:1920px) and (height:1080px) {
+   
+    body {
+        background-image : url('./default/assets/fundo.png');
+        background-size: cover;
+    }
+
+    #img {
+        background-image: url('');
+        background-size:cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        width: 250px;
+        height: 250px;
+        position: absolute;
+        top: 25%;
+        left: 76%;
+        z-index: 0;
+        /* border : 1px solid red; */
+        border-radius: 50%;
+        
+        
+    }
+
+
+    #topbar {
+        position: absolute;
+        top: 4.2%;
+        left: 5%;
+        width: 50%;
+        height: 15%;
+        z-index: 1
+    }
+
+    #topbar>img {
+        position: absolute;
+        top: 7.5%;
+        left: 1.5%;
+        height: 107px;
+        width: 80pxpx;
+        z-index: 1
+    }
+
+    #title {}
+
+    
+    
+    #title {
+        position: absolute;
+        top: 17%;
+        left: 6%;
+        padding: 25px;
+        /* background-color: rgba(15, 15, 15, .9); */
+        z-index: 2;
+        color: #e71082;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 4em;
+        font-weight: 700;
+        width: 85%;
+        /* border : 1px solid red; */
+    }
+    #bar {
+        position: absolute;
+        top: 46%;
+        left: 8%;
+        width: 70%;
+        height: 50%;
+        /* border : 1px solid red; */
+        z-index: 1
+    }
+    #content {
+        position: absolute;
+        top: 0%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        /* border : 1px solid red; */
+        overflow: visible
+    }
+
+    #description {
+        position: absolute;
+        left:0 ;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        color: #fff;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 3em
+    }
+}
+
+
+@media (width:1920px) and (height:1010px) {
+    body {
+        background-image : url('./default/assets/fundo.png');
+        background-size: cover;
+    }
+
+    #img {
+        background-image: url('');
+        background-size:cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        width: 250px;
+        height: 250px;
+        position: absolute;
+        top: 25%;
+        left: 76%;
+        z-index: 0;
+        /* border : 1px solid red; */
+        border-radius: 50%;
+        
+        
+    }
+
+
+    #topbar {
+        position: absolute;
+        top: 4.2%;
+        left: 5%;
+        width: 50%;
+        height: 15%;
+        z-index: 1
+    }
+
+    #topbar>img {
+        position: absolute;
+        top: 7.5%;
+        left: 1.5%;
+        height: 107px;
+        width: 80pxpx;
+        z-index: 1
+    }
+
+    #title {}
+
+    
+    
+    #title {
+        position: absolute;
+        top: 17%;
+        left: 6%;
+        padding: 25px;
+        /* background-color: rgba(15, 15, 15, .9); */
+        z-index: 2;
+        color: #e71082;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 4em;
+        font-weight: 700;
+        width: 85%;
+        /* border : 1px solid red; */
+    }
+    #bar {
+        position: absolute;
+        top: 46%;
+        left: 8%;
+        width: 70%;
+        height: 50%;
+        /* border : 1px solid red; */
+        z-index: 1
+    }
+    #content {
+        position: absolute;
+        top: 0%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        /* border : 1px solid red; */
+        overflow: visible
+    }
+
+    #description {
+        position: absolute;
+        left:0 ;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        color: #fff;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 3em
+    }
+}
+

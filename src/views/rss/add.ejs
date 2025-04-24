@@ -1,0 +1,62 @@
+<%- contentFor('body') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Adicionar Fonte RSS</h1>
+    <a href="/rss" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i> Voltar
+    </a>
+</div>
+
+<% if (messages.error) { %>
+    <div class="alert alert-danger" role="alert">
+        <%= messages.error %>
+    </div>
+<% } %>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Nova Fonte RSS</h5>
+    </div>
+    <div class="card-body">
+        <form action="/rss/add" method="POST">
+            <div class="mb-3">
+                <label for="name" class="form-label">Nome da Fonte <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="name" name="name" required>
+                <div class="form-text">Nome descritivo para identificar a fonte RSS (ex: Conecta Verde).</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="url" class="form-label">URL <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="url" name="url" required>
+                <div class="form-text">URL completa da fonte RSS (ex: localhost/combo_rss/conectaverde/default).</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="source" class="form-label">Nome Técnico <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="source" name="source" required>
+                <div class="form-text">Nome técnico da pasta da fonte (ex: conectaVerde). Usado para identificar a pasta no sistema.</div>
+            </div>
+            
+            <!-- Campo oculto para descrição - mantido por compatibilidade -->
+            <input type="hidden" name="description" value="">
+            
+            <div class="mb-3">
+                <label for="group" class="form-label">Grupo <span class="text-danger">*</span></label>
+                <select class="form-select" id="group" name="group" required>
+                    <option value="">Selecione um grupo</option>
+                    <% if (Array.isArray(groups) && groups.length > 0) { %>
+                        <% groups.forEach(group => { %>
+                            <option value="<%= group._id %>"><%= group.name %></option>
+                        <% }); %>
+                    <% } %>
+                </select>
+                <div class="form-text">Grupo ao qual esta fonte RSS pertence.</div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="/rss" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div> 

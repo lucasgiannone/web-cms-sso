@@ -1,0 +1,228 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="bi bi-cloud-upload me-2 text-primary"></i>
+                <%= locals.mediaId ? 'Editar Mídia' : 'Nova Mídia' %>
+            </h1>
+            <a href="/media" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><%= locals.mediaId ? 'Editar Mídia' : 'Nova Mídia' %></h5>
+            </div>
+            <div class="card-body">
+                <form action="<%= locals.mediaId ? `/media/${mediaId}/update` : '/media/upload' %>" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <% if (locals.mediaId) { %>
+                        <input type="hidden" name="_method" value="PUT">
+                    
+                        <div class="mb-4">
+                            <label for="name" class="form-label">Nome da Mídia</label>
+                            <input type="text" class="form-control" id="name" name="name" value="<%= locals.media && media.name || '' %>" required>
+                            <div class="invalid-feedback">
+                                Por favor, informe um nome para a mídia.
+                            </div>
+                        </div>
+                    <% } %>
+                    
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"><%= locals.media && media.description || '' %></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="group" class="form-label">Grupo</label>
+                        <select class="form-select" id="group" name="group">
+                            <option value="">Selecione um grupo</option>
+                            <% if (locals.groups && locals.groups.length > 0) { %>
+                                <% locals.groups.forEach(function(group) { %>
+                                    <option value="<%= group._id %>" <%= locals.media && media.group && media.group._id == group._id ? 'selected' : '' %>><%= group.name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                    
+                    <% if (!locals.mediaId) { %>
+                        <div class="mb-4">
+                            <label for="mediaFile" class="form-label">Arquivos</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="mediaFile" name="mediaFile" accept="image/*,video/*,text/html" multiple required>
+                                <div class="invalid-feedback">
+                                    Por favor, selecione pelo menos um arquivo de imagem, vídeo ou HTML.
+                                </div>
+                            </div>
+                            <div class="form-text">
+                                Formatos suportados: JPG, PNG, GIF, MP4, WEBM, HTML (máx. 50MB por arquivo)<br>
+                                O nome de cada mídia será o nome do arquivo sem a extensão.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4" id="previewContainer">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div id="previewList" class="row g-3">
+                                        <div id="noPreview" class="col-12 py-5">
+                                            <i class="bi bi-image text-muted icon-large"></i>
+                                            <p class="text-muted mt-2">Selecione arquivos para visualizar os previews</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div class="mb-4">
+                            <label class="form-label">Arquivo Atual</label>
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <% if (locals.media && media.type === 'image') { %>
+                                        <img src="/api/media/<%= media._id %>/file" alt="<%= media.name %>" class="img-fluid" style="max-height: 300px;">
+                                    <% } else if (locals.media && media.type === 'video') { %>
+                                        <video src="/api/media/<%= media._id %>/file" controls class="img-fluid" style="max-height: 300px;"></video>
+                                    <% } else if (locals.media && media.type === 'html') { %>
+                                        <div class="position-relative" style="height: 300px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                                            <iframe src="/api/media/<%= media._id %>/file" style="width: 100%; height: 100%; border: none;"></iframe>
+                                            <div class="position-absolute top-0 end-0 m-2 d-flex gap-2">
+                                                <span class="badge bg-primary">HTML</span>
+                                                <a href="/api/media/<%= media._id %>/file" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-arrows-fullscreen"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="py-5">
+                                            <i class="bi bi-image text-muted icon-large"></i>
+                                            <p class="text-muted mt-2">Nenhum arquivo disponível</p>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-<%= locals.mediaId ? 'save' : 'cloud-upload' %> me-2"></i>
+                            <%= locals.mediaId ? 'Salvar Alterações' : 'Fazer Upload' %>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% if (!locals.mediaId) { %>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mediaFile = document.getElementById('mediaFile');
+        const previewList = document.getElementById('previewList');
+        const noPreview = document.getElementById('noPreview');
+        
+        mediaFile.addEventListener('change', function() {
+            const files = Array.from(this.files);
+            
+            if (files.length > 0) {
+                noPreview.style.display = 'none';
+                previewList.innerHTML = ''; // Limpa previews anteriores
+                
+                files.forEach((file, index) => {
+                    const fileType = file.type;
+                    const reader = new FileReader();
+                    const previewCol = document.createElement('div');
+                    previewCol.className = 'col-md-6 col-lg-4';
+                    
+                    const previewCard = document.createElement('div');
+                    previewCard.className = 'card h-100';
+                    
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'card-body text-center';
+                    
+                    reader.onload = function(e) {
+                        if (fileType.startsWith('image/')) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'img-fluid mb-2';
+                            img.style.maxHeight = '200px';
+                            cardBody.appendChild(img);
+                        } else if (fileType.startsWith('video/')) {
+                            const video = document.createElement('video');
+                            video.src = e.target.result;
+                            video.controls = true;
+                            video.className = 'img-fluid mb-2';
+                            video.style.maxHeight = '200px';
+                            cardBody.appendChild(video);
+                        } else if (fileType === 'text/html') {
+                            // Mostrar preview para arquivos HTML
+                            const previewContainer = document.createElement('div');
+                            previewContainer.className = 'position-relative';
+                            previewContainer.style.height = '150px';
+                            previewContainer.style.marginBottom = '10px';
+                            previewContainer.style.border = '1px solid #ddd';
+                            previewContainer.style.borderRadius = '4px';
+                            
+                            const iframe = document.createElement('iframe');
+                            iframe.src = e.target.result;
+                            iframe.style.width = '100%';
+                            iframe.style.height = '100%';
+                            iframe.style.border = 'none';
+                            previewContainer.appendChild(iframe);
+                            
+                            const badgeContainer = document.createElement('div');
+                            badgeContainer.className = 'position-absolute top-0 end-0 m-1';
+                            const badge = document.createElement('span');
+                            badge.className = 'badge bg-primary';
+                            badge.textContent = 'HTML';
+                            badgeContainer.appendChild(badge);
+                            previewContainer.appendChild(badgeContainer);
+                            
+                            cardBody.appendChild(previewContainer);
+                        }
+                        
+                        const fileName = document.createElement('p');
+                        fileName.className = 'mb-0 small text-truncate';
+                        fileName.title = file.name;
+                        fileName.textContent = file.name;
+                        cardBody.appendChild(fileName);
+                        
+                        const fileSize = document.createElement('small');
+                        fileSize.className = 'text-muted';
+                        fileSize.textContent = formatFileSize(file.size);
+                        cardBody.appendChild(fileSize);
+                    }
+                    
+                    reader.readAsDataURL(file);
+                    
+                    previewCard.appendChild(cardBody);
+                    previewCol.appendChild(previewCard);
+                    previewList.appendChild(previewCol);
+                });
+                
+                // Auto-preenche o nome se estiver vazio e houver apenas um arquivo
+                const nameInput = document.getElementById('name');
+                if (!nameInput.value && files.length === 1) {
+                    nameInput.value = files[0].name.split('.').slice(0, -1).join('.');
+                }
+            } else {
+                previewList.innerHTML = '';
+                noPreview.style.display = 'block';
+            }
+        });
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    });
+</script>
+<% } %> 

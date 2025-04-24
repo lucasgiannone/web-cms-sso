@@ -1,0 +1,58 @@
+<%- include('../partials/header', { title: title }) %>
+
+<div class="content-wrapper">
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">Editar Template: <%= template.name %></h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/templates">Templates</a></li>
+            <li class="breadcrumb-item active">Editar</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-lg-6 mx-auto">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">Editar Nome do Template</h3>
+              <div class="card-tools">
+                <a href="/templates/<%= template._id %>" class="btn btn-light btn-sm">
+                  <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+              </div>
+            </div>
+            <div class="card-body">
+              <form action="/templates/edit/<%= template._id %>" method="POST">
+                <div class="form-group">
+                  <label for="name">Nome do Template *</label>
+                  <input type="text" class="form-control" id="name" name="name" value="<%= template.name %>" required>
+                  <small class="form-text text-muted">Apenas o nome do template pode ser alterado. Para editar o conteúdo, crie uma nova mensagem a partir deste template.</small>
+                </div>
+                <div class="mt-3">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                  </button>
+                  <a href="/templates/<%= template._id %>" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %> 

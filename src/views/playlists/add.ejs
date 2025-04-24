@@ -1,0 +1,62 @@
+<%- contentFor('body') %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Nova Playlist</h1>
+    <a href="/playlists" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i> Voltar
+    </a>
+</div>
+
+<% if (messages.error) { %>
+    <div class="alert alert-danger" role="alert">
+        <%= messages.error %>
+    </div>
+<% } %>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Informações da Playlist</h5>
+    </div>
+    <div class="card-body">
+        <form action="/playlists/create" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="name" class="form-label">Nome da Playlist <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Descrição</label>
+                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label for="group" class="form-label">Grupo <span class="text-danger">*</span></label>
+                <select class="form-select" id="group" name="group" required>
+                    <option value="">Selecione um grupo</option>
+                    <% if (locals.groups && groups.length > 0) { %>
+                        <% groups.forEach(function(group) { %>
+                            <option value="<%= group._id %>"><%= group.name %></option>
+                        <% }); %>
+                    <% } %>
+                </select>
+            </div>
+            
+            <% if (locals.rssItem) { %>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> Após criar a playlist, a fonte RSS "<strong><%= rssItem.name %></strong>" será adicionada automaticamente.
+                    <input type="hidden" name="initialRssId" value="<%= rssItem._id %>">
+                </div>
+            <% } else { %>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> Você poderá adicionar itens à playlist após criá-la.
+                </div>
+            <% } %>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-2"></i> Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div> 

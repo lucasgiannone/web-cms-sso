@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Templates - CMS</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/templates.css">
+</head>
+<body>
+    <!-- Main Content -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-0"><i class="bi bi-code-square me-2 text-primary"></i>Templates</h1>
+                <a href="/templates/create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Novo Template
+                </a>
+            </div>
+            <hr>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="templateFilter" data-table-target="#templateTable" placeholder="Filtrar templates...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="groupFilter">
+                <option value="all">Todos os grupos</option>
+                <% if (locals.groups && locals.groups.length > 0) { %>
+                    <% locals.groups.forEach(function(group) { %>
+                        <option value="<%= group._id %>"><%= group.name %></option>
+                    <% }); %>
+                <% } %>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="typeFilter">
+                <option value="all">Todos os tipos</option>
+                <option value="html">HTML</option>
+                <option value="image">Imagem</option>
+                <option value="video">Vídeo</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Lista de Templates -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <% if (templates && templates.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="templateTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;"></th>
+                                        <th>Nome</th>
+                                        <th>Tipo</th>
+                                        <th>Grupo</th>
+                                        <th>Última Modificação</th>
+                                        <th>Status</th>
+                                        <th style="width: 120px;">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% templates.forEach(function(template) { %>
+                                        <tr>
+                                            <td>
+                                                <div class="template-preview-thumb">
+                                                    <% if (template?.thumbnail) { %>
+                                                        <img src="<%= template.thumbnail %>" 
+                                                             alt="Prévia do template <%= template?.name || 'Template' %>" 
+                                                             class="img-fluid rounded"
+                                                             style="width: 50px; height: 50px; object-fit: cover;"
+                                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                                        <div class="template-icon-fallback" style="display: none;">
+                                                            <i class="bi bi-file-earmark-code text-primary"></i>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <div class="template-icon-fallback">
+                                                            <i class="bi bi-file-earmark-code text-primary"></i>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <a href="/templates/<%= template?._id || '#' %>" class="text-decoration-none">
+                                                    <strong><%= template?.name || 'Template sem nome' %></strong>
+                                                </a>
+                                                <% if (template?.description) { %>
+                                                    <br>
+                                                    <small class="text-muted"><%= template.description %></small>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-<%= (template?.type || 'html') === 'html' ? 'primary' : ((template?.type || 'html') === 'image' ? 'success' : 'info') %>">
+                                                    <i class="bi bi-<%= (template?.type || 'html') === 'html' ? 'code-square' : ((template?.type || 'html') === 'image' ? 'image' : 'camera-video') %> me-1"></i>
+                                                    <%= (template?.type || 'html').toUpperCase() %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <% if (template?.group?.name) { %>
+                                                    <%= template.group.name %>
+                                                <% } else { %>
+                                                    <span class="text-muted">-</span>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <% if (template?.updatedAt) { %>
+                                                    <span title="<%= new Date(template.updatedAt).toLocaleString() %>">
+                                                        <%= new Date(template.updatedAt).toLocaleDateString() %>
+                                                    </span>
+                                                    <% if (template?.lastModifiedBy?.name) { %>
+                                                        <br>
+                                                        <small class="text-muted">por <%= template.lastModifiedBy.name %></small>
+                                                    <% } %>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-<%= template?.active ? 'success' : 'secondary' %>">
+                                                    <i class="bi bi-<%= template?.active ? 'check-circle' : 'dash-circle' %> me-1"></i>
+                                                    <%= template?.active ? 'Ativo' : 'Inativo' %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="/templates/<%= template?._id || '#' %>" class="btn btn-sm btn-outline-primary" title="Ver detalhes">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="/templates/message/<%= template?._id || '#' %>" class="btn btn-sm btn-outline-success" title="Nova Mensagem">
+                                                        <i class="bi bi-envelope-plus"></i>
+                                                    </a>
+                                                    <a href="/templates/edit/<%= template?._id || '#' %>" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-danger" 
+                                                            title="Excluir"
+                                                            onclick="confirmDelete('<%= template?._id || '' %>', '<%= template?.name || 'Template sem nome' %>')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-5">
+                            <i class="bi bi-file-earmark-code display-1 text-muted mb-3"></i>
+                            <h4>Nenhum template encontrado</h4>
+                            <p class="text-muted">Comece criando seu primeiro template!</p>
+                            <a href="/templates/create" class="btn btn-primary mt-3">
+                                <i class="bi bi-plus-circle me-2"></i>Criar Template
+                            </a>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Exclusão -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Exclusão</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir o template <strong id="templateNameToDelete"></strong>?</p>
+                    <p class="text-danger mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Esta ação não pode ser desfeita e também excluirá todas as mensagens criadas a partir deste template.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form id="deleteForm" action="" method="POST" style="display: inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i>Excluir Template
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 border-top mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; <%= new Date().getFullYear() %> CMS Player. Todos os direitos reservados.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">Versão 1.0.0</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="/js/main.js"></script>
+    <script src="/js/templates.js"></script>
+    
+    <script>
+        // Função para confirmar exclusão
+        function confirmDelete(templateId, templateName) {
+            document.getElementById('templateNameToDelete').textContent = templateName;
+            document.getElementById('deleteForm').action = `/templates/delete/${templateId}`;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+
+        // Filtro de tabela
+        document.getElementById('templateFilter').addEventListener('input', function() {
+            const searchText = this.value.toLowerCase();
+            const table = document.getElementById('templateTable');
+            const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+            Array.from(rows).forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchText) ? '' : 'none';
+            });
+        });
+
+        // Filtro de grupo
+        document.getElementById('groupFilter').addEventListener('change', function() {
+            const selectedGroup = this.value;
+            const rows = document.getElementById('templateTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+            Array.from(rows).forEach(row => {
+                if (selectedGroup === 'all') {
+                    row.style.display = '';
+                } else {
+                    const groupCell = row.cells[3].textContent.trim();
+                    row.style.display = groupCell.includes(selectedGroup) ? '' : 'none';
+                }
+            });
+        });
+
+        // Filtro de tipo
+        document.getElementById('typeFilter').addEventListener('change', function() {
+            const selectedType = this.value;
+            const rows = document.getElementById('templateTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+            Array.from(rows).forEach(row => {
+                if (selectedType === 'all') {
+                    row.style.display = '';
+                } else {
+                    const typeCell = row.cells[2].textContent.trim().toLowerCase();
+                    row.style.display = typeCell.includes(selectedType) ? '' : 'none';
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .template-preview-thumb {
+            width: 50px;
+            height: 50px;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .template-icon-fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</body>
+</html> 

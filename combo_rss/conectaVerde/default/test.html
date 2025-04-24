@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Teste de Acesso RSS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c8f7b;
+        }
+        p {
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Conecta Verde - Teste</h1>
+        <p>Este é um arquivo HTML estático para testar se o acesso direto ao conteúdo RSS está funcionando corretamente a partir do player.</p>
+        <p>Se você está vendo esta página, significa que o player conseguiu carregar o conteúdo local com sucesso.</p>
+        <p>Data e hora atual: <span id="datetime"></span></p>
+    </div>
+
+    <script>
+        // Exibir data e hora atual
+        document.getElementById('datetime').textContent = new Date().toLocaleString();
+        
+        // Notificar console que a página foi carregada
+        console.log('Página de teste carregada com sucesso: ' + new Date().toLocaleString());
+    </script>
+</body>
+</html> 

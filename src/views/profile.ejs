@@ -1,0 +1,243 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="bi bi-person-circle me-2 text-primary"></i>
+                Meu Perfil
+            </h1>
+            <a href="/dashboard" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Informações Pessoais</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Nome</h6>
+                        <p class="fs-5"><%= user.name %></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Email</h6>
+                        <p class="fs-5"><%= user.email %></p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Grupo</h6>
+                        <p class="fs-5">
+                            <% if (user.group && user.group.name) { %>
+                                <span class="badge bg-info"><%= user.group.name %></span>
+                            <% } else { %>
+                                <span class="text-muted">Nenhum grupo</span>
+                            <% } %>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Função</h6>
+                        <p class="fs-5">
+                            <% if (user.isAdmin) { %>
+                                <span class="badge bg-danger">Administrador</span>
+                            <% } else { %>
+                                <span class="badge bg-secondary">Usuário</span>
+                            <% } %>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Último Login</h6>
+                        <p class="fs-5">
+                            <% if (user.lastLogin) { %>
+                                <%= new Date(user.lastLogin).toLocaleString('pt-BR') %>
+                            <% } else { %>
+                                <span class="text-muted">Nunca</span>
+                            <% } %>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-1">Conta Criada em</h6>
+                        <p class="fs-5"><%= new Date(user.createdAt).toLocaleString('pt-BR') %></p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                    <i class="bi bi-pencil me-2"></i>Editar Perfil
+                </button>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0">Segurança</h5>
+            </div>
+            <div class="card-body">
+                <p>Altere sua senha regularmente para manter sua conta segura.</p>
+                <p>Sua senha foi alterada pela última vez em: 
+                    <% if (user.updatedAt) { %>
+                        <%= new Date(user.updatedAt).toLocaleString('pt-BR') %>
+                    <% } else { %>
+                        <span class="text-muted">Desconhecido</span>
+                    <% } %>
+                </p>
+                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    <i class="bi bi-key me-2"></i>Alterar Senha
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edição de Perfil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editProfileModalLabel">Editar Perfil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/profile/update" method="POST" class="needs-validation" novalidate>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="name" name="name" value="<%= user.name %>" required>
+                        <div class="invalid-feedback">
+                            Por favor, informe seu nome.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required>
+                        <div class="invalid-feedback">
+                            Por favor, informe um email válido.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Alteração de Senha -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="changePasswordModalLabel">Alterar Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/profile/change-password" method="POST" class="needs-validation" novalidate>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="currentPassword" class="form-label">Senha Atual</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">
+                            Por favor, informe sua senha atual.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Nova Senha</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">
+                            Por favor, informe uma nova senha.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirmNewPassword" class="form-label">Confirmar Nova Senha</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleConfirmNewPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback">
+                            As senhas não coincidem.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Alterar Senha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle password visibility
+        const toggleCurrentPassword = document.getElementById('toggleCurrentPassword');
+        const toggleNewPassword = document.getElementById('toggleNewPassword');
+        const toggleConfirmNewPassword = document.getElementById('toggleConfirmNewPassword');
+        const currentPassword = document.getElementById('currentPassword');
+        const newPassword = document.getElementById('newPassword');
+        const confirmNewPassword = document.getElementById('confirmNewPassword');
+        
+        function togglePasswordVisibility(inputElement, buttonElement) {
+            if (inputElement && buttonElement) {
+                buttonElement.addEventListener('click', function() {
+                    const type = inputElement.getAttribute('type') === 'password' ? 'text' : 'password';
+                    inputElement.setAttribute('type', type);
+                    this.querySelector('i').classList.toggle('bi-eye');
+                    this.querySelector('i').classList.toggle('bi-eye-slash');
+                });
+            }
+        }
+        
+        togglePasswordVisibility(currentPassword, toggleCurrentPassword);
+        togglePasswordVisibility(newPassword, toggleNewPassword);
+        togglePasswordVisibility(confirmNewPassword, toggleConfirmNewPassword);
+        
+        // Validate password match
+        const form = document.querySelector('#changePasswordModal form');
+        if (form && newPassword && confirmNewPassword) {
+            form.addEventListener('submit', function(event) {
+                if (newPassword.value !== confirmNewPassword.value) {
+                    confirmNewPassword.setCustomValidity('As senhas não coincidem');
+                    event.preventDefault();
+                    event.stopPropagation();
+                } else {
+                    confirmNewPassword.setCustomValidity('');
+                }
+                form.classList.add('was-validated');
+            });
+            
+            confirmNewPassword.addEventListener('input', function() {
+                if (newPassword.value !== confirmNewPassword.value) {
+                    confirmNewPassword.setCustomValidity('As senhas não coincidem');
+                } else {
+                    confirmNewPassword.setCustomValidity('');
+                }
+            });
+        }
+    });
+</script> 

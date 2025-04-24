@@ -1,0 +1,257 @@
+<%- include('../partials/header', { title: title }) %>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Coluna do formulário (esquerda) -->
+        <div class="col-lg-7">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-envelope me-2"></i>Nova Mensagem</h5>
+                </div>
+                <form id="messageForm" action="/templates/create-message/<%= template._id %>" method="POST" enctype="multipart/form-data">
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Campos básicos da mensagem -->
+                            <div class="col-12 mb-4">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Nome da Mensagem <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Descrição</label>
+                                    <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="group" class="form-label">Grupo <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="group" name="group" required>
+                                        <option value="">Selecione um grupo</option>
+                                        <% groups.forEach(function(group) { %>
+                                            <option value="<%= group._id %>"><%= group.name %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Variáveis dinâmicas do template -->
+                            <div class="col-12">
+                                <h6 class="mb-3">Variáveis do Template</h6>
+                                <% if (template.variables && template.variables.length > 0) { %>
+                                    <div class="row g-3">
+                                        <% template.variables.forEach(function(variable) { %>
+                                            <div class="col-md-6">
+                                                <div class="card variable-card">
+                                                    <div class="card-body">
+                                                        <label class="form-label"><%= variable.name %></label>
+                                                        <% if (variable.type === 'text') { %>
+                                                            <input type="text" 
+                                                                   class="form-control form-control-sm variable-input" 
+                                                                   name="variables[<%= variable.name %>]"
+                                                                   value="<%= variable.value || '' %>">
+                                                        <% } else if (variable.type === 'image') { %>
+                                                            <input type="file" 
+                                                                   class="form-control form-control-sm variable-input variable-image" 
+                                                                   name="variable_file_<%= variable.name %>"
+                                                                   data-variable-name="<%= variable.name %>"
+                                                                   accept="image/*">
+                                                            <div class="image-preview">
+                                                                <img src="<%= variable.value || '/img/placeholder.png' %>" 
+                                                                     class="img-fluid rounded" 
+                                                                     alt="Preview">
+                                                            </div>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <% }); %>
+                                    </div>
+                                <% } else { %>
+                                    <div class="alert alert-info">
+                                        Este template não possui variáveis dinâmicas.
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="/templates/<%= template._id %>" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Voltar
+                            </a>
+                            <div>
+                                <button type="button" class="btn btn-outline-primary me-2" id="fullPreviewBtn">
+                                    <i class="bi bi-fullscreen me-2"></i>Prévia Tela Cheia
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i>Criar Mensagem
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Coluna da prévia (direita) -->
+        <div class="col-lg-5">
+            <div class="card shadow-sm mb-4 sticky-top" style="top: 20px; z-index: 10;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-eye me-2"></i>Prévia da Mensagem</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="preview-container">
+                        <iframe id="inlinePreviewFrame" style="width: 100%; height: 600px; border: none;"></iframe>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-outline-primary" id="refreshInlinePreviewBtn">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Atualizar Prévia
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview em tela cheia (modal) -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Prévia da Mensagem</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <iframe id="previewFrame" style="width: 100%; height: 70vh; border: none;"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" id="refreshPreviewBtn">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Atualizar Prévia
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- contentFor('styles') %>
+<style>
+    .variable-card {
+        transition: all 0.3s ease;
+        border: 1px solid #dee2e6;
+    }
+    .variable-card:hover {
+        border-color: #0d6efd;
+    }
+    .image-preview {
+        max-height: 150px;
+        overflow: hidden;
+        border-radius: 4px;
+    }
+    .image-preview img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+    }
+    .preview-container {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    /* Para dispositivos móveis, a prévia ficará abaixo do formulário */
+    @media (max-width: 991.98px) {
+        .sticky-top {
+            position: relative;
+            top: 0 !important;
+        }
+    }
+</style>
+
+<%- contentFor('scripts') %>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageForm = document.getElementById('messageForm');
+        const previewFrame = document.getElementById('previewFrame');
+        const inlinePreviewFrame = document.getElementById('inlinePreviewFrame');
+        const variableInputs = document.querySelectorAll('.variable-input');
+        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+        const refreshPreviewBtn = document.getElementById('refreshPreviewBtn');
+        const refreshInlinePreviewBtn = document.getElementById('refreshInlinePreviewBtn');
+        const fullPreviewBtn = document.getElementById('fullPreviewBtn');
+
+        // Botão para abrir modal de prévia em tela cheia
+        fullPreviewBtn.addEventListener('click', function() {
+            updatePreview(true);
+            previewModal.show();
+        });
+        
+        // Atualizar preview com debounce
+        let previewTimeout;
+        function updatePreview(updateModal = false) {
+            const formData = new FormData(messageForm);
+            formData.append('preview', 'true');
+            
+            fetch(messageForm.action + '/preview', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Atualizar a prévia inline
+                const inlineDoc = inlinePreviewFrame.contentDocument;
+                inlineDoc.open();
+                inlineDoc.write(html);
+                inlineDoc.close();
+                
+                // Atualizar a prévia do modal se solicitado
+                if (updateModal) {
+                    const previewDoc = previewFrame.contentDocument;
+                    previewDoc.open();
+                    previewDoc.write(html);
+                    previewDoc.close();
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao atualizar prévia:', error);
+            });
+        }
+
+        // Atualizar preview ao mudar inputs
+        variableInputs.forEach(input => {
+            if (input.type === 'text') {
+                input.addEventListener('input', function() {
+                    clearTimeout(previewTimeout);
+                    previewTimeout = setTimeout(() => updatePreview(), 500);
+                });
+            } else if (input.type === 'file') {
+                input.addEventListener('change', function() {
+                    const preview = this.closest('.variable-card').querySelector('.image-preview img');
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            preview.src = e.target.result;
+                            clearTimeout(previewTimeout);
+                            previewTimeout = setTimeout(() => updatePreview(), 500);
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    }
+                });
+            }
+        });
+
+        // Botões de atualizar prévia
+        if (refreshPreviewBtn) {
+            refreshPreviewBtn.addEventListener('click', () => updatePreview(true));
+        }
+        
+        if (refreshInlinePreviewBtn) {
+            refreshInlinePreviewBtn.addEventListener('click', () => updatePreview());
+        }
+
+        // Inicializar preview
+        setTimeout(() => updatePreview(), 1000);
+    });
+</script>
+
+<%- include('../partials/footer') %>

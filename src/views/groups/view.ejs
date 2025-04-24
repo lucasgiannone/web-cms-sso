@@ -1,0 +1,314 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0">
+                <i class="bi bi-diagram-3 me-2 text-primary"></i>
+                <%= group.name %>
+            </h1>
+            <div>
+                <a href="/groups" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-arrow-left me-2"></i>Voltar
+                </a>
+                <a href="/groups/<%= group._id %>/edit" class="btn btn-primary">
+                    <i class="bi bi-pencil me-2"></i>Editar
+                </a>
+            </div>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Informações do Grupo</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Nome:</div>
+                    <div class="col-md-9"><%= group.name %></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Descrição:</div>
+                    <div class="col-md-9"><%= group.description || 'Nenhuma descrição fornecida' %></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Status:</div>
+                    <div class="col-md-9">
+                        <% if (group.active !== false) { %>
+                            <span class="badge bg-success">Ativo</span>
+                        <% } else { %>
+                            <span class="badge bg-danger">Inativo</span>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">Criado em:</div>
+                    <div class="col-md-9"><%= new Date(group.createdAt).toLocaleDateString() %></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 fw-bold">Última atualização:</div>
+                    <div class="col-md-9"><%= new Date(group.updatedAt || group.createdAt).toLocaleDateString() %></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Permissões</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Gerenciar Usuários
+                                <% if (group.permissions && group.permissions.canManageUsers) { %>
+                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                <% } else { %>
+                                    <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                                <% } %>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Gerenciar Mídias
+                                <% if (group.permissions && group.permissions.canManageMedia) { %>
+                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                <% } else { %>
+                                    <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                                <% } %>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Gerenciar Playlists
+                                <% if (group.permissions && group.permissions.canManagePlaylists) { %>
+                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                <% } else { %>
+                                    <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                                <% } %>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Gerenciar Players
+                                <% if (group.permissions && group.permissions.canManagePlayers) { %>
+                                    <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                <% } else { %>
+                                    <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+                                <% } %>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <div class="alert <%= group.permissions && group.permissions.isAdmin ? 'alert-warning' : 'alert-secondary' %>">
+                        <div class="d-flex align-items-center">
+                            <% if (group.permissions && group.permissions.isAdmin) { %>
+                                <i class="bi bi-shield-fill-check me-3 fs-3"></i>
+                                <div>
+                                    <h5 class="mb-1">Privilégios de Administrador</h5>
+                                    <p class="mb-0">Este grupo possui acesso total ao sistema.</p>
+                                </div>
+                            <% } else { %>
+                                <i class="bi bi-shield me-3 fs-3"></i>
+                                <div>
+                                    <h5 class="mb-1">Permissões Limitadas</h5>
+                                    <p class="mb-0">Este grupo não possui privilégios de administrador.</p>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Usuários</h5>
+                        <span class="badge bg-primary"><%= group.userCount || 0 %></span>
+                    </div>
+                    <div class="card-body">
+                        <% if (locals.users && users.length > 0) { %>
+                            <div class="list-group list-group-flush">
+                                <% users.slice(0, 5).forEach(function(user) { %>
+                                    <a href="/users/<%= user._id %>" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-3">
+                                                <span class="initials"><%= user.name.charAt(0).toUpperCase() %></span>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0"><%= user.name %></h6>
+                                                <small class="text-muted"><%= user.email %></small>
+                                            </div>
+                                        </div>
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                <% }); %>
+                            </div>
+                            <% if (group.userCount > 5) { %>
+                                <div class="text-center mt-3">
+                                    <a href="/users?group=<%= group._id %>" class="btn btn-sm btn-outline-primary">Ver todos os usuários</a>
+                                </div>
+                            <% } %>
+                        <% } else { %>
+                            <div class="text-center py-4">
+                                <i class="bi bi-people text-muted icon-large mb-3"></i>
+                                <p>Nenhum usuário neste grupo</p>
+                                <a href="/users/new?group=<%= group._id %>" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-plus-circle me-2"></i>Adicionar Usuário
+                                </a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Players</h5>
+                        <span class="badge bg-warning"><%= group.playerCount || 0 %></span>
+                    </div>
+                    <div class="card-body">
+                        <% if (locals.players && players.length > 0) { %>
+                            <div class="list-group list-group-flush">
+                                <% players.slice(0, 5).forEach(function(player) { %>
+                                    <a href="/players/<%= player._id %>" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0"><%= player.name %></h6>
+                                            <small class="text-muted"><%= player.location || 'Sem localização' %></small>
+                                        </div>
+                                        <span class="badge <%= player.status === 'online' ? 'bg-success' : 'bg-danger' %>">
+                                            <%= player.status === 'online' ? 'Online' : 'Offline' %>
+                                        </span>
+                                    </a>
+                                <% }); %>
+                            </div>
+                            <% if (group.playerCount > 5) { %>
+                                <div class="text-center mt-3">
+                                    <a href="/players?group=<%= group._id %>" class="btn btn-sm btn-outline-primary">Ver todos os players</a>
+                                </div>
+                            <% } %>
+                        <% } else { %>
+                            <div class="text-center py-4">
+                                <i class="bi bi-display text-muted icon-large mb-3"></i>
+                                <p>Nenhum player neste grupo</p>
+                                <a href="/players/new?group=<%= group._id %>" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-plus-circle me-2"></i>Adicionar Player
+                                </a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Estatísticas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-4">
+                        <div class="p-3 rounded-circle bg-primary bg-opacity-10 mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-people-fill text-primary fs-1"></i>
+                        </div>
+                        <h3 class="mb-0"><%= group.userCount || 0 %></h3>
+                        <p class="text-muted">Usuários</p>
+                    </div>
+                    <div class="col-6 mb-4">
+                        <div class="p-3 rounded-circle bg-info bg-opacity-10 mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-images text-info fs-1"></i>
+                        </div>
+                        <h3 class="mb-0"><%= group.mediaCount || 0 %></h3>
+                        <p class="text-muted">Mídias</p>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded-circle bg-success bg-opacity-10 mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-collection-play text-success fs-1"></i>
+                        </div>
+                        <h3 class="mb-0"><%= group.playlistCount || 0 %></h3>
+                        <p class="text-muted">Playlists</p>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded-circle bg-warning bg-opacity-10 mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-display text-warning fs-1"></i>
+                        </div>
+                        <h3 class="mb-0"><%= group.playerCount || 0 %></h3>
+                        <p class="text-muted">Players</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Ações</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/users/new?group=<%= group._id %>" class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus me-2"></i>Adicionar Usuário
+                    </a>
+                    <a href="/players/new?group=<%= group._id %>" class="btn btn-outline-primary">
+                        <i class="bi bi-display me-2"></i>Adicionar Player
+                    </a>
+                    <a href="/groups/<%= group._id %>/edit" class="btn btn-outline-secondary">
+                        <i class="bi bi-pencil me-2"></i>Editar Grupo
+                    </a>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteGroupModal">
+                        <i class="bi bi-trash me-2"></i>Excluir Grupo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteGroupModal" tabindex="-1" aria-labelledby="deleteGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteGroupModalLabel">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Você tem certeza que deseja excluir o grupo <strong><%= group.name %></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Esta ação não pode ser desfeita. Todos os recursos associados a este grupo serão afetados.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="/groups/<%= group._id %>/delete" class="btn btn-danger">Excluir Grupo</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        background-color: #007bff;
+        border-radius: 50%;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+    
+    .icon-large {
+        font-size: 3rem;
+        display: block;
+    }
+</style> 

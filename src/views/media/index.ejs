@@ -1,0 +1,550 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0"><i class="bi bi-images me-2 text-primary"></i>Biblioteca de Mídias</h1>
+            <div>
+                <button id="toggleSelectionMode" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-check2-square me-1"></i>Modo Seleção
+                </button>
+                <a href="/media/new" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Nova Mídia
+                </a>
+            </div>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div id="selectionToolbar" class="row mb-4" style="display: none;">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <span id="selectedCount" class="badge bg-primary me-2">0</span> 
+                    <span>item(s) selecionado(s)</span>
+                    <button id="selectAll" class="btn btn-sm btn-outline-secondary ms-2">Selecionar Todos</button>
+                    <button id="deselectAll" class="btn btn-sm btn-outline-secondary ms-2">Desmarcar Todos</button>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="deleteSelectedBtn" class="btn btn-danger" disabled>
+                        <i class="bi bi-trash me-1"></i>Excluir Selecionados
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="addToPlaylistDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-collection-play me-1"></i>Adicionar à Playlist
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="addToPlaylistDropdown">
+                            <% if (locals.playlists && locals.playlists.length > 0) { %>
+                                <% locals.playlists.forEach(function(playlist) { %>
+                                    <li><a class="dropdown-item playlist-item" href="#" data-playlist-id="<%= playlist._id %>"><%= playlist.name %></a></li>
+                                <% }); %>
+                            <% } else { %>
+                                <li><span class="dropdown-item disabled">Nenhuma playlist ativa disponível</span></li>
+                            <% } %>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/playlists/new"><i class="bi bi-plus-circle me-1"></i>Criar Nova Playlist</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="tableFilter" data-table-target="#mediaTable" placeholder="Filtrar mídias...">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" id="typeFilter">
+            <option value="all">Todos os tipos</option>
+            <option value="image">Imagens</option>
+            <option value="video">Vídeos</option>
+            <option value="html">HTML</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" id="groupFilter">
+            <option value="all">Todos os grupos</option>
+            <% if (locals.groups && locals.groups.length > 0) { %>
+                <% locals.groups.forEach(function(group) { %>
+                    <option value="<%= group._id %>"><%= group.name %></option>
+                <% }); %>
+            <% } %>
+        </select>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <% if (locals.media && locals.media.length > 0) { %>
+                    <div class="row" id="mediaGrid">
+                        <% locals.media.forEach(function(item) { %>
+                            <div class="col-lg-3 col-md-4 col-sm-6 mb-4 media-item" 
+                                 data-type="<%= item.type %>" 
+                                 data-group="<%= item.group ? item.group._id : 'none' %>"
+                                 data-media-id="<%= item._id %>">
+                                <div class="card h-100">
+                                    <div class="media-card">
+                                        <!-- Checkbox para seleção -->
+                                        <div class="media-select-checkbox" style="display: none;">
+                                            <div class="form-check">
+                                                <input class="form-check-input media-checkbox" type="checkbox" value="<%= item._id %>">
+                                            </div>
+                                        </div>
+                                        
+                                        <% if (item.type === 'image') { %>
+                                            <img src="/api/media/<%= item._id %>/file" class="card-img-top" alt="<%= item.name %>">
+                                        <% } else if (item.type === 'video') { %>
+                                            <video src="/api/media/<%= item._id %>/file" class="card-img-top"></video>
+                                            <div class="position-absolute top-50 start-50 translate-middle text-white">
+                                                <i class="bi bi-play-circle-fill icon-large"></i>
+                                            </div>
+                                        <% } else if (item.type === 'html') { %>
+                                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light position-relative" style="height: 160px;">
+                                                <iframe src="/api/media/<%= item._id %>/file" class="position-absolute top-0 start-0 w-100 h-100" style="border: none;" loading="lazy"></iframe>
+                                                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.1); z-index: 2;">
+                                                    <span class="badge bg-primary position-absolute top-0 end-0 m-1">HTML</span>
+                                                </div>
+                                            </div>
+                                        <% } %>
+                                        <div class="media-overlay">
+                                            <h6 class="mb-0"><%= item.name %></h6>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6 class="card-title text-truncate"><%= item.name %></h6>
+                                        <p class="card-text mb-1">
+                                            <small class="text-muted">
+                                                <i class="bi bi-<%= item.type === 'image' ? 'image' : (item.type === 'video' ? 'film' : 'file-earmark-code') %> me-1"></i>
+                                                <%= item.type %>
+                                            </small>
+                                        </p>
+                                        <p class="card-text mb-0">
+                                            <small class="text-muted">
+                                                <i class="bi bi-diagram-3 me-1"></i>
+                                                <%= item.group ? item.group.name : 'Sem grupo' %>
+                                            </small>
+                                        </p>
+                                    </div>
+                                    <div class="card-footer d-flex justify-content-between">
+                                        <a href="/media/<%= item._id %>" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i>Ver
+                                        </a>
+                                        <div>
+                                            <a href="/media/<%= item._id %>/edit" class="btn btn-sm btn-outline-secondary me-1">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="/media/<%= item._id %>/delete" class="btn btn-sm btn-outline-danger btn-delete">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                    
+                    <% if (locals.pagination) { %>
+                        <div class="d-flex justify-content-center mt-4">
+                            <nav aria-label="Navegação de páginas">
+                                <ul class="pagination">
+                                    <% if (pagination.currentPage > 1) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="/media?page=<%= pagination.currentPage - 1 %>" aria-label="Anterior">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Anterior">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                                        <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                                            <a class="page-link" href="/media?page=<%= i %>"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% if (pagination.currentPage < pagination.totalPages) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="/media?page=<%= pagination.currentPage + 1 %>" aria-label="Próximo">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Próximo">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="bi bi-images text-muted icon-large mb-3"></i>
+                        <h5>Nenhuma mídia encontrada</h5>
+                        <p class="text-muted">Faça upload de imagens ou vídeos para começar.</p>
+                        <a href="/media/new" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle me-2"></i>Fazer Upload
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilo para o modo de seleção */
+    .media-select-checkbox {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        background-color: rgba(255, 255, 255, 0.7);
+        border-radius: 4px;
+        padding: 3px;
+    }
+    
+    .media-card {
+        position: relative;
+    }
+
+    /* Estilo para o card da mídia quando selecionado */
+    .card.selected {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    /* Estilo para o ícone de seleção */
+    .form-check-input:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    
+    /* Estilo para o botão de exclusão quando ativo */
+    #deleteSelectedBtn:not(:disabled) {
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filtro por tipo
+        const typeFilter = document.getElementById('typeFilter');
+        const groupFilter = document.getElementById('groupFilter');
+        const mediaItems = document.querySelectorAll('.media-item');
+        
+        function applyFilters() {
+            const typeValue = typeFilter.value;
+            const groupValue = groupFilter.value;
+            
+            mediaItems.forEach(item => {
+                const typeMatch = typeValue === 'all' || item.dataset.type === typeValue;
+                const groupMatch = groupValue === 'all' || item.dataset.group === groupValue;
+                
+                if (typeMatch && groupMatch) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        typeFilter.addEventListener('change', applyFilters);
+        groupFilter.addEventListener('change', applyFilters);
+        
+        // Preview de vídeo ao passar o mouse
+        const videoCards = document.querySelectorAll('.media-card video');
+        
+        videoCards.forEach(video => {
+            const card = video.closest('.media-card');
+            
+            card.addEventListener('mouseenter', function() {
+                video.play();
+                video.muted = true;
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                video.pause();
+                video.currentTime = 0;
+            });
+        });
+
+        // Elementos
+        const toggleSelectionModeBtn = document.getElementById('toggleSelectionMode');
+        const selectionToolbar = document.getElementById('selectionToolbar');
+        const selectAllBtn = document.getElementById('selectAll');
+        const deselectAllBtn = document.getElementById('deselectAll');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+        const mediaCheckboxes = document.querySelectorAll('.media-checkbox');
+        const playlistItems = document.querySelectorAll('.playlist-item');
+        
+        // Variáveis
+        let selectionModeActive = false;
+        
+        // Eventos
+        toggleSelectionModeBtn.addEventListener('click', toggleSelectionMode);
+        selectAllBtn.addEventListener('click', selectAllMedia);
+        deselectAllBtn.addEventListener('click', deselectAllMedia);
+        deleteSelectedBtn.addEventListener('click', confirmDeleteSelected);
+        
+        // Inicializar o estado do botão quando a página carrega
+        updateSelectedCount();
+        
+        // Adicionar evento de clique a cada checkbox
+        mediaCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const mediaItem = this.closest('.media-item');
+                if (this.checked) {
+                    mediaItem.querySelector('.card').classList.add('selected');
+                } else {
+                    mediaItem.querySelector('.card').classList.remove('selected');
+                }
+                updateSelectedCount();
+            });
+        });
+        
+        // Adicionar evento de clique ao card para selecionar/deselecionar
+        mediaItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                // Não ativar se clicar em links ou botões dentro do card
+                if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || 
+                    e.target.closest('a') || e.target.closest('button')) {
+                    return;
+                }
+                
+                if (selectionModeActive) {
+                    const checkbox = this.querySelector('.media-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                    
+                    if (checkbox.checked) {
+                        this.querySelector('.card').classList.add('selected');
+                    } else {
+                        this.querySelector('.card').classList.remove('selected');
+                    }
+                    
+                    // Dispara o evento change para atualizar a contagem
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            });
+        });
+        
+        // Adicionar evento para cada item de playlist no dropdown
+        playlistItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const playlistId = this.getAttribute('data-playlist-id');
+                addSelectedMediaToPlaylist(playlistId);
+            });
+        });
+        
+        // Funções
+        function toggleSelectionMode() {
+            selectionModeActive = !selectionModeActive;
+            
+            if (selectionModeActive) {
+                // Ativar modo de seleção
+                toggleSelectionModeBtn.classList.remove('btn-outline-primary');
+                toggleSelectionModeBtn.classList.add('btn-primary');
+                selectionToolbar.style.display = 'flex';
+                
+                // Mostrar checkboxes
+                document.querySelectorAll('.media-select-checkbox').forEach(checkbox => {
+                    checkbox.style.display = 'block';
+                });
+            } else {
+                // Desativar modo de seleção
+                toggleSelectionModeBtn.classList.add('btn-outline-primary');
+                toggleSelectionModeBtn.classList.remove('btn-primary');
+                selectionToolbar.style.display = 'none';
+                
+                // Ocultar checkboxes e remover seleções
+                document.querySelectorAll('.media-select-checkbox').forEach(checkbox => {
+                    checkbox.style.display = 'none';
+                });
+                
+                document.querySelectorAll('.media-checkbox').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                document.querySelectorAll('.card.selected').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                updateSelectedCount();
+            }
+        }
+        
+        function selectAllMedia() {
+            mediaCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                checkbox.closest('.media-item').querySelector('.card').classList.add('selected');
+            });
+            updateSelectedCount();
+        }
+        
+        function deselectAllMedia() {
+            mediaCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('.media-item').querySelector('.card').classList.remove('selected');
+            });
+            updateSelectedCount();
+        }
+        
+        function updateSelectedCount() {
+            const selectedCount = document.querySelectorAll('.media-checkbox:checked').length;
+            selectedCountSpan.textContent = selectedCount;
+            
+            // Habilitar/desabilitar botão de adicionar à playlist
+            const addToPlaylistBtn = document.getElementById('addToPlaylistDropdown');
+            const hasPlaylists = document.querySelectorAll('.playlist-item').length > 0;
+            
+            if (selectedCount === 0 || !hasPlaylists) {
+                addToPlaylistBtn.disabled = true;
+            } else {
+                addToPlaylistBtn.disabled = false;
+            }
+            
+            // Atualizar o texto do botão se não houver playlists
+            if (!hasPlaylists) {
+                addToPlaylistBtn.innerHTML = '<i class="bi bi-collection-play me-1"></i>Sem playlists ativas';
+            } else {
+                addToPlaylistBtn.innerHTML = '<i class="bi bi-collection-play me-1"></i>Adicionar à Playlist';
+            }
+            
+            // Habilitar/desabilitar botão de excluir selecionados
+            deleteSelectedBtn.disabled = selectedCount === 0;
+        }
+        
+        function addSelectedMediaToPlaylist(playlistId) {
+            const selectedMedia = Array.from(document.querySelectorAll('.media-checkbox:checked')).map(checkbox => checkbox.value);
+            
+            if (selectedMedia.length === 0) {
+                alert('Selecione pelo menos uma mídia para adicionar à playlist.');
+                return;
+            }
+            
+            // Preparar os headers da requisição
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            // Adicionar CSRF token se disponível
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (csrfMeta) {
+                headers['CSRF-Token'] = csrfMeta.getAttribute('content');
+            }
+            
+            // Enviar requisição para adicionar mídias à playlist
+            fetch(`/api/playlists/${playlistId}/add-media`, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ mediaIds: selectedMedia })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erro ao adicionar mídias à playlist: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Mostrar mensagem de sucesso
+                alert(`${selectedMedia.length} mídia(s) adicionada(s) à playlist com sucesso!`);
+                
+                // Desativar modo de seleção
+                toggleSelectionMode();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Ocorreu um erro ao adicionar as mídias à playlist. Tente novamente.');
+            });
+        }
+
+        function confirmDeleteSelected() {
+            const selectedMedia = Array.from(document.querySelectorAll('.media-checkbox:checked'));
+            
+            if (selectedMedia.length === 0) {
+                alert('Selecione pelo menos uma mídia para excluir.');
+                return;
+            }
+            
+            // Confirmação com contagem de itens
+            const confirmMessage = `Tem certeza que deseja excluir ${selectedMedia.length} mídia(s)? Esta ação não pode ser desfeita.`;
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            // Obter array de IDs das mídias selecionadas
+            const mediaIds = selectedMedia.map(checkbox => checkbox.value);
+            
+            // Preparar os headers da requisição
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            // Adicionar CSRF token se disponível
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (csrfMeta) {
+                headers['CSRF-Token'] = csrfMeta.getAttribute('content');
+            }
+            
+            // Enviar requisição para excluir as mídias selecionadas
+            fetch('/api/media/delete-multiple', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ mediaIds: mediaIds })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Erro ao excluir mídias: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Mostrar mensagem de sucesso
+                let successMessage = `${data.deleted} mídia(s) excluída(s) com sucesso!`;
+                
+                // Adicionar aviso sobre erros em arquivos, se houver
+                if (data.fileErrors && data.fileErrors.length > 0) {
+                    successMessage += `\n\nAtenção: Ocorreram ${data.fileErrors.length} erro(s) ao excluir arquivos físicos.`;
+                    console.warn('Erros na exclusão de arquivos físicos:', data.fileErrors);
+                }
+                
+                alert(successMessage);
+                
+                // Recarregar a página para atualizar a lista
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Ocorreu um erro ao excluir as mídias. Tente novamente.');
+            });
+        }
+    });
+</script> 

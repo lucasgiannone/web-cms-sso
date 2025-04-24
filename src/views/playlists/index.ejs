@@ -1,0 +1,330 @@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="mb-0"><i class="bi bi-collection-play me-2 text-primary"></i>Playlists</h1>
+            <a href="/playlists/new" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Nova Playlist
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="tableFilter" data-table-target="#playlistTable" placeholder="Filtrar playlists...">
+        </div>
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" id="groupFilter">
+            <option value="all">Todos os grupos</option>
+            <% if (locals.groups && locals.groups.length > 0) { %>
+                <% locals.groups.forEach(function(group) { %>
+                    <option value="<%= group._id %>"><%= group.name %></option>
+                <% }); %>
+            <% } %>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" id="statusFilter">
+            <option value="all">Todos os status</option>
+            <option value="active">Apenas ativas</option>
+            <option value="inactive">Apenas inativas</option>
+        </select>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <% if (locals.playlists && locals.playlists.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="playlistTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;"></th>
+                                    <th>Nome</th>
+                                    <th>Descrição</th>
+                                    <th>Grupo</th>
+                                    <th>Itens</th>
+                                    <th>Criado em</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% locals.playlists.forEach(function(playlist) { %>
+                                    <tr data-group="<%= playlist.group ? playlist.group._id : 'none' %>" class="<%= !playlist.active ? 'table-secondary' : '' %>">
+                                        <td>
+                                            <% if (playlist.thumbnail) { %>
+                                                <img src="/api/media/<%= playlist.thumbnail._id %>/file" alt="<%= playlist.name %>" 
+                                                     class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                            <% } else { %>
+                                                <div class="d-flex justify-content-center align-items-center bg-light rounded" 
+                                                     style="width: 50px; height: 50px;">
+                                                    <i class="bi bi-collection-play text-primary"></i>
+                                                </div>
+                                            <% } %>
+                                        </td>
+                                        <td><%= playlist.name %></td>
+                                        <td><%= playlist.description || '-' %></td>
+                                        <td><%= playlist.group ? playlist.group.name : 'Sem grupo' %></td>
+                                        <td><span class="badge bg-primary"><%= playlist.items ? playlist.items.length : 0 %></span></td>
+                                        <td><%= new Date(playlist.createdAt).toLocaleDateString() %></td>
+                                        <td>
+                                            <% if (playlist.active) { %>
+                                                <span class="badge bg-success">Ativa</span>
+                                            <% } else { %>
+                                                <span class="badge bg-secondary">Inativa</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="/playlists/<%= playlist._id %>" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <!-- Botão para adicionar como subplaylist -->
+                                                <button class="btn btn-sm btn-outline-success add-as-subplaylist" 
+                                                        data-playlist-id="<%= playlist._id %>" 
+                                                        data-playlist-name="<%= playlist.name %>">
+                                                    <i class="bi bi-plus-circle-dotted" title="Adicionar como subplaylist"></i>
+                                                </button>
+                                                <% if (playlist.active) { %>
+                                                <a href="/api/playlists/<%= playlist._id %>/delete" class="btn btn-sm btn-outline-danger btn-delete" onclick="return confirm('Tem certeza que deseja desativar esta playlist?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                                <% } else if (locals.user && locals.user.role === 'admin') { %>
+                                                <a href="/api/playlists/<%= playlist._id %>/reactivate" class="btn btn-sm btn-outline-success" onclick="return confirm('Deseja reativar esta playlist?')">
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </a>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <% if (locals.pagination) { %>
+                        <div class="d-flex justify-content-center mt-4">
+                            <nav aria-label="Navegação de páginas">
+                                <ul class="pagination">
+                                    <% if (pagination.currentPage > 1) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="/playlists?page=<%= pagination.currentPage - 1 %>" aria-label="Anterior">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Anterior">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                                        <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                                            <a class="page-link" href="/playlists?page=<%= i %>"><%= i %></a>
+                                        </li>
+                                    <% } %>
+                                    
+                                    <% if (pagination.currentPage < pagination.totalPages) { %>
+                                        <li class="page-item">
+                                            <a class="page-link" href="/playlists?page=<%= pagination.currentPage + 1 %>" aria-label="Próximo">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } else { %>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Próximo">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    <% } %>
+                                </ul>
+                            </nav>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="bi bi-collection-play text-muted icon-large mb-3"></i>
+                        <h5>Nenhuma playlist encontrada</h5>
+                        <p class="text-muted">Crie uma playlist para começar a organizar suas mídias.</p>
+                        <a href="/playlists/new" class="btn btn-primary mt-2">
+                            <i class="bi bi-plus-circle me-2"></i>Criar Playlist
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filtro por grupo
+        const groupFilter = document.getElementById('groupFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        
+        function applyFilters() {
+            const groupValue = groupFilter.value;
+            const statusValue = statusFilter.value;
+            const rows = document.querySelectorAll('#playlistTable tbody tr');
+            
+            rows.forEach(row => {
+                let showByGroup = groupValue === 'all' || row.dataset.group === groupValue;
+                let showByStatus = true;
+                
+                if (statusValue === 'active') {
+                    showByStatus = !row.classList.contains('table-secondary');
+                } else if (statusValue === 'inactive') {
+                    showByStatus = row.classList.contains('table-secondary');
+                }
+                
+                if (showByGroup && showByStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        if (groupFilter) {
+            groupFilter.addEventListener('change', applyFilters);
+        }
+        
+        if (statusFilter) {
+            statusFilter.addEventListener('change', applyFilters);
+        }
+        
+        // Iniciar com filtro de status em "Apenas ativas"
+        if (statusFilter) {
+            statusFilter.value = 'active';
+            applyFilters();
+        }
+    });
+</script>
+
+<!-- Modal para adicionar como subplaylist -->
+<div class="modal fade" id="subplaylistModal" tabindex="-1" aria-labelledby="subplaylistModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="subplaylistModalLabel">Adicionar como Subplaylist</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Selecione a playlist à qual deseja adicionar "<span id="selectedPlaylistName"></span>" como subplaylist:</p>
+        
+        <div class="form-group mb-3">
+            <label for="parentPlaylist" class="form-label">Playlist Principal</label>
+            <select class="form-select" id="parentPlaylist" required>
+                <option value="">Selecione uma playlist</option>
+                <% if (locals.playlists && locals.playlists.length > 0) { %>
+                    <% locals.playlists.forEach(function(playlist) { %>
+                        <option value="<%= playlist._id %>"><%= playlist.name %></option>
+                    <% }); %>
+                <% } %>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="subplaylistDuration" class="form-label">Duração (segundos)</label>
+            <input type="number" class="form-control" id="subplaylistDuration" min="0" value="0">
+            <small class="form-text text-muted">
+                0 = usar a duração total da subplaylist (soma de todas as mídias)
+            </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="confirmAddSubplaylist">Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Código para lidar com o botão de adicionar como subplaylist
+        const addSubplaylistButtons = document.querySelectorAll('.add-as-subplaylist');
+        const subplaylistModal = new bootstrap.Modal(document.getElementById('subplaylistModal'));
+        const confirmAddSubplaylistBtn = document.getElementById('confirmAddSubplaylist');
+        
+        let selectedSubplaylistId = null;
+        
+        addSubplaylistButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Obter o ID e nome da playlist selecionada
+                selectedSubplaylistId = this.dataset.playlistId;
+                const playlistName = this.dataset.playlistName;
+                
+                // Preencher o modal com esses dados
+                document.getElementById('selectedPlaylistName').textContent = playlistName;
+                
+                // Remover a opção da própria playlist do dropdown (para evitar loops)
+                const parentPlaylistSelect = document.getElementById('parentPlaylist');
+                Array.from(parentPlaylistSelect.options).forEach(option => {
+                    if (option.value === selectedSubplaylistId) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
+                
+                // Mostrar o modal
+                subplaylistModal.show();
+            });
+        });
+        
+        // Evento para adicionar a subplaylist
+        confirmAddSubplaylistBtn.addEventListener('click', function() {
+            const parentPlaylistId = document.getElementById('parentPlaylist').value;
+            const duration = document.getElementById('subplaylistDuration').value;
+            
+            if (!parentPlaylistId) {
+                alert('Por favor, selecione uma playlist principal');
+                return;
+            }
+            
+            if (!selectedSubplaylistId) {
+                alert('Erro: Nenhuma subplaylist selecionada');
+                return;
+            }
+            
+            // Enviar requisição para adicionar a subplaylist
+            fetch(`/api/playlists/${parentPlaylistId}/add-subplaylist`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    subPlaylistId: selectedSubplaylistId,
+                    duration: parseInt(duration) || 0
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Exibir mensagem de sucesso
+                    alert('Subplaylist adicionada com sucesso!');
+                    subplaylistModal.hide();
+                } else {
+                    // Exibir mensagem de erro
+                    alert('Erro ao adicionar subplaylist: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao adicionar subplaylist:', error);
+                alert('Erro ao adicionar subplaylist. Verifique o console para mais detalhes.');
+            });
+        });
+    });
+</script> 

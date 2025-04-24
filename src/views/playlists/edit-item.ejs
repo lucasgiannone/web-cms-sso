@@ -1,0 +1,221 @@
+<div class="container-fluid mt-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="mb-0"><i class="bi bi-pencil me-2 text-primary"></i>Editar Item da Playlist</h1>
+        <div>
+          <a href="/playlists/<%= playlistId %>" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Voltar para Playlist
+          </a>
+        </div>
+      </div>
+      <hr>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Configurações do Item</h5>
+        </div>
+        <div class="card-body">
+          <form action="/playlists/<%= playlistId %>/items/<%= item._id %>/update" method="POST">
+            <div class="row mb-4">
+              <div class="col-md-8">
+                <div class="form-group mb-3">
+                  <label class="form-label">Mídia</label>
+                  <input type="text" class="form-control" value="<%= item.media.name %>" disabled>
+                </div>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label for="duration" class="form-label">Duração (segundos)</label>
+                      <input type="number" class="form-control" id="duration" name="duration" min="0" value="<%= item.duration || 0 %>">
+                      <small class="form-text text-muted">Para imagens, define o tempo de exibição. Para vídeos, deixe 0 para usar a duração original.</small>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label for="order" class="form-label">Ordem</label>
+                      <input type="number" class="form-control" id="order" name="order" min="0" value="<%= item.order || 0 %>">
+                      <small class="form-text text-muted">Posição do item na playlist. Itens são ordenados do menor para o maior.</small>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Seção de Agendamento -->
+                <div class="card mt-3 mb-3">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="bi bi-calendar-event me-2"></i>Agendamento (Opcional)</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="alert alert-info">
+                      <i class="bi bi-info-circle-fill me-2"></i>
+                      <strong>Dica:</strong> O agendamento permite configurar quando uma mídia deve aparecer na playlist.
+                      <ul class="mb-0 mt-2">
+                        <li>Campanhas sazonais (Natal, Black Friday, etc.)</li>
+                        <li>Promoções por tempo limitado</li>
+                        <li>Conteúdos específicos para certos dias da semana ou horários</li>
+                        <li>Mensagens que devem aparecer apenas em datas especiais</li>
+                      </ul>
+                    </div>
+                    
+                    <p class="text-muted small mb-3">Configure quando esta mídia deve começar e parar de ser exibida na playlist. Deixe em branco para exibir sem restrições de tempo.</p>
+                    
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group mb-3">
+                          <label for="startDateTime" class="form-label">Data e Hora de Início</label>
+                          <% 
+                            let startDateValue = '';
+                            if (item.startDateTime) {
+                              // Formatar para o formato aceito pelo input datetime-local (YYYY-MM-DDThh:mm)
+                              const startDate = new Date(item.startDateTime);
+                              startDateValue = startDate.toISOString().slice(0, 16);
+                            }
+                          %>
+                          <input type="datetime-local" class="form-control" id="startDateTime" name="startDateTime" value="<%= startDateValue %>">
+                          <small class="form-text text-muted">A partir de quando esta mídia deve ser exibida.</small>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group mb-3">
+                          <label for="endDateTime" class="form-label">Data e Hora de Fim</label>
+                          <% 
+                            let endDateValue = '';
+                            if (item.endDateTime) {
+                              // Formatar para o formato aceito pelo input datetime-local (YYYY-MM-DDThh:mm)
+                              const endDate = new Date(item.endDateTime);
+                              endDateValue = endDate.toISOString().slice(0, 16);
+                            }
+                          %>
+                          <input type="datetime-local" class="form-control" id="endDateTime" name="endDateTime" value="<%= endDateValue %>">
+                          <small class="form-text text-muted">Até quando esta mídia deve ser exibida.</small>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="form-check mt-2">
+                      <input class="form-check-input" type="checkbox" id="clearSchedule" name="clearSchedule">
+                      <label class="form-check-label" for="clearSchedule">
+                        Remover agendamento (exibir sempre)
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="card">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0">Pré-visualização</h6>
+                  </div>
+                  <div class="card-body text-center">
+                    <div id="media-preview" class="mb-3">
+                      <% if (item.media.type === 'image') { %>
+                        <img src="/api/media/<%= item.media._id %>/file" class="img-fluid" style="max-height: 200px; border-radius: 5px;" alt="Preview">
+                      <% } else if (item.media.type === 'video') { %>
+                        <div class="position-relative" style="height: 200px;">
+                          <img src="/api/media/thumbnail/<%= item.media._id %>" class="img-fluid" style="max-height: 200px; border-radius: 5px;" alt="Preview">
+                          <div class="position-absolute top-50 start-50 translate-middle">
+                            <i class="bi bi-play-circle-fill text-white" style="font-size: 3rem;"></i>
+                          </div>
+                        </div>
+                      <% } else { %>
+                        <div class="placeholder-image d-flex justify-content-center align-items-center bg-light" style="height: 200px; border-radius: 5px;">
+                          <i class="bi bi-file-earmark text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                      <% } %>
+                    </div>
+                    <h6 class="mb-1"><%= item.media.name %></h6>
+                    <p class="text-muted small">Tipo: <%= item.media.type %></p>
+                    
+                    <% if (item.startDateTime || item.endDateTime) { %>
+                      <div class="alert alert-info mt-3 mb-0 small">
+                        <i class="bi bi-calendar-event me-2"></i>
+                        <strong>Agendamento Ativo</strong><br>
+                        <% if (item.startDateTime) { %>
+                          <div class="mt-1">
+                            <strong>Início:</strong> <%= new Date(item.startDateTime).toLocaleString() %>
+                          </div>
+                        <% } %>
+                        <% if (item.endDateTime) { %>
+                          <div class="mt-1">
+                            <strong>Fim:</strong> <%= new Date(item.endDateTime).toLocaleString() %>
+                          </div>
+                        <% } %>
+                      </div>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+              <div>
+                <a href="/playlists/<%= playlistId %>" class="btn btn-outline-secondary me-2">
+                  <i class="bi bi-x-circle me-2"></i>Cancelar
+                </a>
+                <a href="/playlists/<%= playlistId %>/items/<%= item._id %>/delete" class="btn btn-outline-danger btn-delete">
+                  <i class="bi bi-trash me-2"></i>Remover Item
+                </a>
+              </div>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save me-2"></i>Salvar Alterações
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Script para lidar com checkbox de limpar agendamento
+    const clearScheduleCheckbox = document.getElementById('clearSchedule');
+    const startDateTimeInput = document.getElementById('startDateTime');
+    const endDateTimeInput = document.getElementById('endDateTime');
+    
+    console.log("Valores iniciais dos campos de agendamento:", {
+      startDateTime: startDateTimeInput.value,
+      endDateTime: endDateTimeInput.value,
+      clearSchedule: clearScheduleCheckbox.checked
+    });
+    
+    clearScheduleCheckbox.addEventListener('change', function() {
+      console.log("Checkbox de limpar agendamento alterado:", this.checked);
+      if (this.checked) {
+        startDateTimeInput.disabled = true;
+        endDateTimeInput.disabled = true;
+      } else {
+        startDateTimeInput.disabled = false;
+        endDateTimeInput.disabled = false;
+      }
+    });
+    
+    // Adicionar listeners para mudanças nos campos de data/hora
+    startDateTimeInput.addEventListener('change', function() {
+      console.log("Data/hora de início alterada:", this.value);
+    });
+    
+    endDateTimeInput.addEventListener('change', function() {
+      console.log("Data/hora de fim alterada:", this.value);
+    });
+    
+    // Adicionar listener ao formulário para log no envio
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+      console.log("Formulário enviado com valores:", {
+        startDateTime: startDateTimeInput.value,
+        endDateTime: endDateTimeInput.value,
+        clearSchedule: clearScheduleCheckbox.checked,
+        startDateDisabled: startDateTimeInput.disabled,
+        endDateDisabled: endDateTimeInput.disabled
+      });
+    });
+  });
+</script>
