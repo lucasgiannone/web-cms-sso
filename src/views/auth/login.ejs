@@ -42,6 +42,7 @@
                 </div>
             </form>
             
+            <!-- Estado SSO: sempre ativado -->
             <div class="text-center mt-3">
                 <p class="mb-2">Ou entre com</p>
                 <div class="d-grid gap-2">
@@ -60,6 +61,11 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Forçar atualização se estiver usando cache
+        if (window.performance && performance.navigation.type === 2) {
+            window.location.reload(true);
+        }
+        
         // Toggle password visibility
         const togglePassword = document.getElementById('togglePassword');
         const password = document.getElementById('password');

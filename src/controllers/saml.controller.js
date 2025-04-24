@@ -11,8 +11,10 @@ dotenv.config();
  * Inicia o processo de login SAML
  */
 const initiateLogin = (req, res, next) => {
-  // Se o servidor SAML está configurado, tenta autenticar
+  // Sempre exibir informações de debug para identificar problemas
+  console.log("Iniciando autenticação SAML...");
   try {
+    console.log("Redirecionando para provedor de identidade...");
     passport.authenticate("saml", {
       successRedirect: "/dashboard",
       failureRedirect: "/auth/login",

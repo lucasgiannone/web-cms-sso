@@ -124,7 +124,17 @@ app.use((req, res, next) => {
     error: req.flash("error"),
     info: req.flash("info"),
   };
-  res.locals.showSSOButton = true; // Sempre mostrar o botão SSO, independente do ambiente
+
+  // FORÇAR exibição do botão SSO independentemente das configurações
+  // Ignorar verificação de samlConfig devido a problemas de cache
+  console.log(
+    "Forçando exibição do botão SSO independentemente da configuração"
+  );
+  res.locals.showSSOButton = true;
+
+  // Adicionar timestamp para evitar problemas de cache
+  res.locals.cacheVersion = Date.now();
+
   next();
 });
 
