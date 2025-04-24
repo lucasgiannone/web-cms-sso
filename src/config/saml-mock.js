@@ -88,7 +88,7 @@ const setupIdpSimulator = (app) => {
       key: idpConfig.key,
       getPostURL: (audience, samlRequestDom, req, callback) => {
         // URL para onde a resposta SAML será enviada (nosso callback do SP)
-        callback(null, "http://localhost:3003/auth/saml/callback");
+        callback(null, "http://177.71.165.181/sso/auth/saml/callback");
       },
       getUserFromRequest: (req) => {
         // Retorna os atributos do usuário para a resposta SAML
@@ -112,7 +112,7 @@ const setupIdpSimulator = (app) => {
             <title>Redirecionando...</title>
           </head>
           <body>
-            <form id="samlform" action="http://localhost:3003/auth/saml/callback" method="post">
+            <form id="samlform" action="http://177.71.165.181/auth/saml/callback" method="post">
               <input type="hidden" name="SAMLResponse" value="${Buffer.from(
                 response
               ).toString("base64")}" />
@@ -130,8 +130,8 @@ const setupIdpSimulator = (app) => {
   });
 
   console.log("Simulador de IdP SAML configurado e pronto para uso");
-  console.log("URL do simulador: http://localhost:3003/simulated-idp");
-  console.log("URL de metadados: http://localhost:3003/simulated-idp/metadata");
+  console.log("URL do simulador: http://177.71.165.181/simulated-idp");
+  console.log("URL de metadados: http://177.71.165.181/simulated-idp/metadata");
 };
 
 module.exports = {

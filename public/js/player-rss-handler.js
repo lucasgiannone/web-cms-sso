@@ -62,7 +62,7 @@ async function initRSSSync() {
   // Configurações do sincronizador
   const config = {
     // URL do servidor CMS
-    serverUrl: "http://localhost:3000",
+    serverUrl: "http://177.71.165.181",
 
     // Caminho local para armazenar os arquivos RSS
     localStoragePath: "./data/rss",
