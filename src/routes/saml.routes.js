@@ -11,6 +11,11 @@ router.get("/simulated-idp", (req, res) => {
   res.render("auth/simulated-idp", { callbackUrl });
 });
 
+// Adiciona uma rota específica para simulador que sempre estará disponível
+router.get("/dev-login", (req, res) => {
+  res.redirect("/simulated-idp");
+});
+
 // Rota de callback para receber a resposta SAML do provedor de identidade
 router.post("/callback", samlController.handleCallback);
 

@@ -11,20 +11,18 @@ dotenv.config();
  * Inicia o processo de login SAML
  */
 const initiateLogin = (req, res, next) => {
-  // Verificar se estamos em ambiente de desenvolvimento
-  if (process.env.NODE_ENV !== "production") {
-    console.log(
-      "Redirecionando para simulador de IdP em ambiente de desenvolvimento"
-    );
-    return res.redirect("/simulated-idp");
+  // Se o servidor SAML está configurado, tenta autenticar
+  try {
+    passport.authenticate("saml", {
+      successRedirect: "/dashboard",
+      failureRedirect: "/auth/login",
+      failureFlash: true,
+    })(req, res, next);
+  } catch (error) {
+    console.error("Erro ao iniciar autenticação SAML:", error);
+    req.flash("error", "Erro ao iniciar autenticação SAML");
+    res.redirect("/auth/login");
   }
-
-  // Em produção, continua usando a estratégia SAML padrão
-  passport.authenticate("saml", {
-    successRedirect: "/dashboard",
-    failureRedirect: "/auth/login",
-    failureFlash: true,
-  })(req, res, next);
 };
 
 /**

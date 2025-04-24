@@ -124,6 +124,7 @@ app.use((req, res, next) => {
     error: req.flash("error"),
     info: req.flash("info"),
   };
+  res.locals.showSSOButton = true; // Sempre mostrar o botão SSO, independente do ambiente
   next();
 });
 
